@@ -25,8 +25,23 @@
 #![feature(str_split_once)]
 
 mod day1;
+mod day2;
 mod utils;
+
+use utils::*;
 
 fn main() {
     println!("Hello, world!");
+
+    let input1 = read_input("input1.txt").unwrap();
+    dbg!(day1::part1(&input1));
+    dbg!(day1::part2(&input1));
+    dbg!(day1::part2_2(&input1));
+
+
+    let input1 = read_input("input2.txt").unwrap();
+    dbg!(day2::part1(&input1));
+    dbg!(day2::part2(&input1));
+
+
 }
