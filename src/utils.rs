@@ -1,5 +1,6 @@
 pub use lazy_static;
 
+pub use std::str::FromStr;
 pub use boolinator::Boolinator;
 // pub use fnv::FnvHasher;
 use fxhash::FxHashMap;
@@ -11,6 +12,8 @@ pub use std::hash::BuildHasherDefault;
 pub use std::io;
 pub use std::io::Read;
 pub use std::path::Path;
+pub use rayon::prelude::*;
+pub use itertools::{iproduct, izip};
 pub use std::{
     cmp::Reverse,
     collections::{BinaryHeap, HashMap},
