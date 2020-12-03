@@ -15,7 +15,6 @@ where
                 pwd,
             )
         })
-        // .take(10)
         .map(|((lower, upper), letter, pwd)| {
             (lower.parse().unwrap(), upper.parse().unwrap(), letter, pwd)
         })

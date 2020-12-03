@@ -1,5 +1,29 @@
 use crate::utils::*;
 
+// pub fn find_sums_to<I, It: IntoIterator<Item = I> + Clone>(input: It, tar: I) -> Option<(I, I)>
+// where
+//     It::IntoIter: Clone,
+//     I:  Copy + std::ops::Add<Output = I> + PartialEq,
+// {
+//     iproduct!(input.clone().into_iter(), input.into_iter()).find(|&(x, y)| (x + y) == tar)
+// }
+
+pub fn find_sums_to<I, It: IntoIterator<Item = I> + Clone>(input: &It, tar: I) -> Option<(I, I)>
+where
+    It::IntoIter: Clone,
+    I: Copy + std::hash::Hash + std::cmp::Eq + std::ops::Sub<Output = I>,
+{
+    let mut set = fset(0);
+    for num in input.clone() {
+        if set.contains(&(tar - num)) {
+            return Some((num, tar - num));
+        } else {
+            set.insert(num);
+        }
+    }
+    None
+}
+
 pub fn part1(input: &str) -> u32 {
     let nums = input
         .lines()
