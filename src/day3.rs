@@ -11,7 +11,7 @@ pub fn part1(input: &str) -> usize {
 }
 pub fn part2(input: &str) -> usize {
     let N = input.lines().next().unwrap().as_bytes().len();
-    let check = |right, down| {
+    let check = |(right, down)| {
         input
             .lines()
             .step_by(down)
@@ -26,5 +26,16 @@ pub fn part2(input: &str) -> usize {
         // .fold(0, |a, b| a + b as usize)
     };
 
-    (check(1, 1) * check(3, 1) * check(5, 1) * check(7, 1) * check(1, 2))
+    [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
+        .iter()
+        .copied()
+        .map(check)
+        .product()
+}
+
+#[test]
+fn test2() {
+    let input = read_input("input3.txt").unwrap();
+    assert_eq!(part1(&input), 265);
+    assert_eq!(part2(&input), 3154761400);
 }

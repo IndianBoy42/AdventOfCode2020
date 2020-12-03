@@ -1,3 +1,7 @@
+use std::mem::size_of;
+
+use bit_set::BitSet;
+
 use crate::utils::*;
 
 // pub fn find_sums_to<I, It: IntoIterator<Item = I> + Clone>(input: It, tar: I) -> Option<(I, I)>
@@ -74,4 +78,28 @@ pub fn part2_2(input: &str) -> i32 {
         .first()
         .copied()
         .unwrap()
+}
+
+fn round_pow2(n: usize) -> usize {
+    1 << (size_of::<usize>() * 8 - n.leading_zeros() as usize)
+}
+pub fn part2fft(input: &str) -> usize {
+    let nums: BitSet = input
+        .lines()
+        .map(FromStr::from_str)
+        .map(Result::unwrap)
+        .filter(|&x| x < 2020)
+        .collect();
+    let N = round_pow2(nums.capacity());
+
+    unimplemented!()
+}
+
+#[test]
+fn test1() {
+    let input = read_input("input1.txt").unwrap();
+    assert_eq!(part1(&input), 646779);
+    assert_eq!(part2(&input), 246191688);
+    assert_eq!(part2_2(&input), 246191688);
+    // assert_eq!(part2fft(&input), 246191688);
 }
