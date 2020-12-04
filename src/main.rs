@@ -27,6 +27,7 @@
 mod day1;
 mod day2;
 mod day3;
+mod day4;
 mod utils;
 
 use utils::*;
@@ -34,16 +35,20 @@ use utils::*;
 fn main() {
     println!("Hello, world!");
 
-    let input1 = read_input("input1.txt").unwrap();
-    dbg!(day1::part1(&input1));
-    dbg!(day1::part2(&input1));
-    dbg!(day1::part2_2(&input1));
+    let input = read_input("input1.txt").unwrap();
+    dbg!(day1::part1(&input));
+    dbg!(day1::part2(&input));
+    dbg!(day1::part2_2(&input));
 
-    let input1 = read_input("input2.txt").unwrap();
-    dbg!(day2::part1(&input1));
-    dbg!(day2::part2(&input1));
+    let input = read_input("input2.txt").unwrap();
+    dbg!(day2::part1(&input));
+    dbg!(day2::part2(&input));
 
-    let input1 = read_input("input3.txt").unwrap();
-    dbg!(day3::part1(&input1));
-    dbg!(day3::part2(&input1));
+    let input = read_input("input3.txt").unwrap();
+    dbg!(day3::part1(&input));
+    dbg!(day3::part2(&input));
+
+    let input = read_input("input4.txt").unwrap();
+    dbg!(day4::part1(&input));
+    dbg!(day4::part2(&input));
 }

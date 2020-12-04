@@ -43,5 +43,4 @@ fn test2() {
     let input = read_input("input2.txt").unwrap();
     assert_eq!(part1(&input), 614);
     assert_eq!(part2(&input), 354);
-    
 }
