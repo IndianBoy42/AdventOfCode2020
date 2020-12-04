@@ -1,6 +1,6 @@
 use crate::utils::*;
 
-fn parse<I: std::str::FromStr>(input: &str) -> impl Iterator<Item = (I, I, char, &str)>
+fn parse<I: std::str::FromStr>(input: &str) -> impl Iterator<Item = (I, I, u8, &str)>
 where
     <I as std::str::FromStr>::Err: std::fmt::Debug,
 {
@@ -10,7 +10,7 @@ where
         .map(|(range, letter, pwd)| {
             (
                 range.split('-').collect_tuple().unwrap(),
-                letter.as_bytes()[0] as char,
+                letter.as_bytes()[0],
                 // letter.chars().next().unwrap(),
                 pwd,
             )
@@ -23,7 +23,8 @@ where
 pub fn part1(input: &str) -> usize {
     parse(input)
         .filter(|&(lower, upper, letter, pwd)| {
-            (lower..=upper).contains(&pwd.chars().filter(move |&c| c == letter).count())
+            (lower..=upper).contains(&pwd.bytes().filter(move |&c| c == letter).count())
+            // (lower..=upper).contains(&pwd.chars().filter(move |&c| c == letter).count())
         })
         .count()
 }
@@ -31,8 +32,8 @@ pub fn part1(input: &str) -> usize {
 pub fn part2(input: &str) -> usize {
     parse(input)
         .filter(|&(lower, upper, letter, pwd): &(usize, usize, _, _)| {
-            let a = pwd.as_bytes()[lower - 1] as char;
-            let b = pwd.as_bytes()[upper - 1] as char;
+            let a = pwd.as_bytes()[lower - 1];
+            let b = pwd.as_bytes()[upper - 1];
             (a == letter) ^ (b == letter)
         })
         .count()

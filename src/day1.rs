@@ -35,10 +35,9 @@ pub fn part1(input: &str) -> u32 {
         .map(Result::unwrap)
         .collect_vec();
 
-    iproduct!(&nums, &nums)
-        .find(|(&x, &y)| (x + y) == 2020)
-        .map(|(&x, &y)| x * y)
-        .unwrap()
+    // iproduct!(&nums, &nums)
+    //     .find(|(&x, &y)| (x + y) == 2020)
+    find_sums_to(&nums, 2020).map(|(x, y)| x * y).unwrap()
 }
 
 pub fn part2(input: &str) -> u32 {
@@ -65,9 +64,10 @@ pub fn part2_2(input: &str) -> u32 {
         .map(Result::unwrap)
         .collect_vec();
 
+    let mut set = fset(nums.len());
     nums.iter()
         .find_map(|&x| {
-            let mut set = fset(nums.len());
+            set.clear();
             for &num in &nums {
                 if set.contains(&(2020 - x - num)) {
                     return Some((x, num, 2020 - x - num));
@@ -77,35 +77,8 @@ pub fn part2_2(input: &str) -> u32 {
             }
             None
         })
+        // .find_map(|&x| find_sums_to(&nums, 2020 - x).map(|(y, z)| (x, y, z)))
         .map(|(x, y, z)| x * y * z)
-        .unwrap()
-        .try_into()
-        .unwrap()
-}
-
-pub fn part2_3(input: &str) -> u32 {
-    let nums = input
-        .lines()
-        .map(i32::from_str)
-        .map(Result::unwrap)
-        .collect_vec();
-
-    nums.par_iter()
-        .filter_map(|&x| {
-            let mut set = fset(nums.len());
-            for &num in &nums {
-                if set.contains(&(2020 - x - num)) {
-                    return Some((x, num, 2020 - x - num));
-                } else {
-                    set.insert(num);
-                }
-            }
-            None
-        })
-        .map(|(x, y, z)| x * y * z)
-        .collect::<Vec<_>>()
-        .first()
-        .copied()
         .unwrap()
         .try_into()
         .unwrap()
@@ -132,6 +105,6 @@ fn test1() {
     assert_eq!(part1(&input), 646779);
     assert_eq!(part2_1(&input), 246191688);
     assert_eq!(part2_2(&input), 246191688);
-    assert_eq!(part2_3(&input), 246191688);
+    // assert_eq!(part2_3(&input), 246191688);
     // assert_eq!(part2fft(&input), 246191688);
 }
