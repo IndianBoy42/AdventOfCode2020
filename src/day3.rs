@@ -2,15 +2,6 @@ use crate::utils::*;
 
 pub fn part1(input: &str) -> usize {
     let N = input.lines().next().unwrap().as_bytes().len();
-    input
-        .lines()
-        .enumerate()
-        .filter(|(i, line)| line.bytes().map(|b| b == b'#').nth((i * 3) % N).unwrap())
-        // .fold(0, |a, b| a + b as usize)
-        .count()
-}
-pub fn part2(input: &str) -> usize {
-    let N = input.lines().next().unwrap().as_bytes().len();
     let check = |(right, down)| {
         input
             .lines()
@@ -18,8 +9,28 @@ pub fn part2(input: &str) -> usize {
             .enumerate()
             .filter(|(i, line)| {
                 line.bytes()
-                    .map(|b| b == b'#')
                     .nth((i * right) % N)
+                    .map(|b| b == b'#')
+                    .unwrap()
+            })
+            .count()
+        // .fold(0, |a, b| a + b as usize)
+    };
+
+    check((3, 1))
+}
+pub fn part2(input: &str) -> usize {
+    let N = input.lines().next().unwrap().as_bytes().len();
+    let lines = input.lines().collect_vec();
+    let check = |(right, down)| {
+        lines
+            .iter()
+            .step_by(down)
+            .enumerate()
+            .filter(|(i, line)| {
+                line.bytes()
+                    .nth((i * right) % N)
+                    .map(|b| b == b'#')
                     .unwrap()
             })
             .count()
