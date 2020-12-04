@@ -4,13 +4,10 @@ pub fn part1(input: &str) -> usize {
     const FIELDS: &[&str; 7] = &["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
 
     input
-        .lines()
-        .collect_vec()
-        .split(|&line| line.is_empty())
-        .map(|passport| passport.join(" "))
+        .split("\n\n")
         .filter(|passport| {
             let fields = passport
-                .split(' ')
+                .split_ascii_whitespace()
                 .map(|field| field.split_once(':').unwrap())
                 // .map(|field| field.split(':').collect_tuple().unwrap())
                 .map(|(l, _)| l)
@@ -52,17 +49,12 @@ fn validate2(fields: &FMap<&str, &str>) -> bool {
 }
 
 pub fn part2(input: &str) -> usize {
-    const FIELDS: &[&str; 7] = &["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
-
     input
-        .lines()
-        .collect_vec()
-        .split(|&line| line.is_empty())
-        .map(|passport| passport.join(" "))
+        .split("\n\n")
         // .map(|x| dbg!(x))
         .filter(|passport| {
             let fields = passport
-                .split(' ')
+                .split_ascii_whitespace()
                 .map(|field| field.split_once(':').unwrap())
                 // .map(|field| field.split(':').collect_tuple().unwrap())
                 .collect();
