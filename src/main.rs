@@ -1,54 +1,26 @@
-#![warn(clippy::all)]
-#![warn(clippy::pedantic)]
-#![allow(incomplete_features)]
-#![allow(dead_code)]
-#![allow(clippy::missing_errors_doc)]
-#![allow(clippy::inline_always)]
-#![allow(clippy::must_use_candidate)]
-#![feature(try_blocks)]
-#![feature(array_value_iter)]
-#![feature(associated_type_bounds)]
-#![feature(const_generics)]
-// #![feature(const_generic_impls_guard)]
-#![feature(split_inclusive)]
-#![feature(iter_partition_in_place)]
-#![feature(map_entry_replace)]
-#![feature(specialization)]
-#![feature(impl_trait_in_bindings)]
-#![feature(try_trait)]
-#![feature(bindings_after_at)]
-#![feature(maybe_uninit_extra)]
-#![feature(maybe_uninit_uninit_array)]
-#![feature(array_chunks)]
-#![feature(array_windows)]
-#![feature(peekable_next_if)]
-#![feature(str_split_once)]
-
-mod day1;
-mod day2;
-mod day3;
-mod day4;
-mod utils;
-
-use utils::*;
+use aoc20::day1;
+use aoc20::day2;
+use aoc20::day3;
+use aoc20::day4;
+use aoc20::utils;
 
 fn main() {
     println!("Hello, world!");
 
-    let input = read_input("input1.txt").unwrap();
+    let input = utils::read_input("input1.txt").unwrap();
     dbg!(day1::part1(&input));
     dbg!(day1::part2(&input));
     dbg!(day1::part2_2(&input));
 
-    let input = read_input("input2.txt").unwrap();
+    let input = utils::read_input("input2.txt").unwrap();
     dbg!(day2::part1(&input));
     dbg!(day2::part2(&input));
 
-    let input = read_input("input3.txt").unwrap();
+    let input = utils::read_input("input3.txt").unwrap();
     dbg!(day3::part1(&input));
     dbg!(day3::part2(&input));
 
-    let input = read_input("input4.txt").unwrap();
+    let input = utils::read_input("input4.txt").unwrap();
     dbg!(day4::part1(&input));
     dbg!(day4::part2(&input));
 }

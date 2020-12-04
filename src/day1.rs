@@ -54,7 +54,31 @@ pub fn part2(input: &str) -> u32 {
         .unwrap()
 }
 
+
 pub fn part2_2(input: &str) -> i32 {
+    let nums = input
+        .lines()
+        .map(i32::from_str)
+        .map(Result::unwrap)
+        .collect_vec();
+
+    nums.iter()
+        .find_map(|&x| {
+            let mut set = fset(nums.len());
+            for &num in &nums {
+                if set.contains(&(2020 - x - num)) {
+                    return Some((x, num, 2020 - x - num));
+                } else {
+                    set.insert(num);
+                }
+            }
+            None
+        })
+        .map(|(x, y, z)| x * y * z)
+        .unwrap()
+}
+
+pub fn part2_3(input: &str) -> i32 {
     let nums = input
         .lines()
         .map(i32::from_str)
@@ -101,5 +125,6 @@ fn test1() {
     assert_eq!(part1(&input), 646779);
     assert_eq!(part2(&input), 246191688);
     assert_eq!(part2_2(&input), 246191688);
+    assert_eq!(part2_3(&input), 246191688);
     // assert_eq!(part2fft(&input), 246191688);
 }

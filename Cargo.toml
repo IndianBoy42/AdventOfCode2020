@@ -18,3 +18,22 @@ arrayvec = "0.5.2"
 lazy_static = "1.4.0"
 boolinator = "2.4.0"
 derive_more = "0.99.11"
+
+[dev-dependencies]
+criterion = "0.3.3"
+
+[[bench]]
+name = "day1"
+harness = false
+
+[[bench]]
+name = "day2"
+harness = false
+
+[[bench]]
+name = "day3"
+harness = false
+
+[[bench]]
+name = "day4"
+harness = false
