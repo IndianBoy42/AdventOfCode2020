@@ -12,12 +12,16 @@ use crate::utils::*;
 //     iproduct!(input.clone().into_iter(), input.into_iter()).find(|&(x, y)| (x + y) == tar)
 // }
 
-pub fn find_sums_to<I, It: IntoIterator<Item = I> + Clone>(input: &It, tar: I) -> Option<(I, I)>
+pub fn find_sums_to<I, It: IntoIterator<Item = I> + Clone>(
+    inputsize: usize,
+    input: &It,
+    tar: I,
+) -> Option<(I, I)>
 where
     It::IntoIter: Clone,
     I: Copy + std::hash::Hash + std::cmp::Eq + std::ops::Sub<Output = I>,
 {
-    let mut set = fset(0);
+    let mut set = fset(inputsize);
     for num in input.clone() {
         if set.contains(&(tar - num)) {
             return Some((num, tar - num));
@@ -33,11 +37,16 @@ pub fn part1(input: &str) -> u32 {
         .lines()
         .map(u32::from_str)
         .map(Result::unwrap)
+        // .sorted().take_while(|&x| x < 2020)
+        .filter(|&x| x < 2020)
         .collect_vec();
 
     // iproduct!(&nums, &nums)
-    //     .find(|(&x, &y)| (x + y) == 2020)
-    find_sums_to(&nums, 2020).map(|(x, y)| x * y).unwrap()
+    // nums.iter().tuple_combinations()
+    // .find(|(&x, &y)| (x + y) == 2020)
+    find_sums_to(nums.len(), &nums, 2020)
+        .map(|(x, y)| x * y)
+        .unwrap()
 }
 
 pub fn part2(input: &str) -> u32 {
@@ -62,20 +71,32 @@ pub fn part2_2(input: &str) -> u32 {
         .lines()
         .map(i32::from_str)
         .map(Result::unwrap)
+        // .sorted().take_while(|&x| x < 2020)
+        .filter(|&x| x < 2020)
+        .sorted()
         .collect_vec();
 
     let mut set = fset(nums.len());
+    set.extend(nums.iter().copied());
+
     nums.iter()
         .find_map(|&x| {
-            set.clear();
-            for &num in &nums {
-                if set.contains(&(2020 - x - num)) {
-                    return Some((x, num, 2020 - x - num));
-                } else {
-                    set.insert(num);
-                }
-            }
-            None
+            nums.iter().find_map(|&num| {
+                set.contains(&(2020 - x - num))
+                    .as_some((x, num, 2020 - x - num))
+            })
+            // .find(|&&num| set.contains(&(2020 - x - num)))
+            // .map(|&num| (x, num, 2020 - x - num))
+            
+            // set.clear();
+            // for &num in &nums {
+            //     if set.contains(&(2020 - x - num)) {
+            //         return Some((x, num, 2020 - x - num));
+            //     } else {
+            //         set.insert(num);
+            //     }
+            // }
+            // None
         })
         // .find_map(|&x| find_sums_to(&nums, 2020 - x).map(|(y, z)| (x, y, z)))
         .map(|(x, y, z)| x * y * z)
@@ -94,7 +115,7 @@ pub fn part2fft(input: &str) -> usize {
         .map(Result::unwrap)
         .filter(|&x| x < 2020)
         .collect();
-    let N = round_pow2(nums.capacity());
+    let _n = round_pow2(nums.capacity());
 
     unimplemented!()
 }

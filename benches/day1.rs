@@ -8,9 +8,9 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("Day 1 Part 1", |b| {
         b.iter(|| day1::part1(black_box(&input)))
     });
-    c.bench_function("Day 1 Part 2", |b| {
-        b.iter(|| day1::part2_1(black_box(&input)))
-    });
+    // c.bench_function("Day 1 Part 2", |b| {
+    //     b.iter(|| day1::part2_1(black_box(&input)))
+    // });
     c.bench_function("Day 1 Part 2", |b| {
         b.iter(|| day1::part2_2(black_box(&input)))
     });
