@@ -1,4 +1,7 @@
+use std::iter::FromIterator;
+
 use crate::utils::*;
+use arrayvec::ArrayVec;
 
 pub fn part1(input: &str) -> usize {
     const FIELDS: &[&str; 7] = &["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
@@ -6,18 +9,40 @@ pub fn part1(input: &str) -> usize {
     input
         .split("\n\n")
         .filter(|passport| {
-            let fields = passport
+            let fields: ArrayVec<[&str; 8]> = passport
                 .split_ascii_whitespace()
                 .map(|field| field.split_once(':').unwrap())
                 // .map(|field| field.split(':').collect_tuple().unwrap())
                 .map(|(l, _)| l)
-                .collect_vec();
+                .collect();
             FIELDS.iter().copied().all(|req| fields.contains(&req))
         })
         .count()
 }
 
-fn validate2(fields: &FMap<&str, &str>) -> bool {
+struct SmolMap<'a> {
+    arr: ArrayVec<[(&'a str, &'a str); 8]>,
+}
+
+impl<'a> FromIterator<(&'a str, &'a str)> for SmolMap<'a> {
+    fn from_iter<I: IntoIterator<Item = (&'a str, &'a str)>>(iter: I) -> Self {
+        SmolMap {
+            arr: iter.into_iter().collect(),
+        }
+    }
+}
+impl<'a> SmolMap<'a> {
+    fn get(&self, i: &str) -> Option<&&str> {
+        self.arr
+            .iter()
+            .find_map(|(k, v)| if *k == i { Some(v) } else { None })
+    }
+}
+
+// type Fields<'a> = FMap<&'a str, &'a str>;
+type Fields<'a> = SmolMap<'a>;
+
+fn validate2(fields: &Fields) -> bool {
     let ok = [
         fields
             .get("byr")
@@ -41,7 +66,8 @@ fn validate2(fields: &FMap<&str, &str>) -> bool {
             ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].contains(&val)
         }),
         fields.get("pid").map_or(false, |&val| {
-            val.len() == 9 && val[..9].chars().all(char::is_numeric)
+            val.len() == 9 && val[..9].bytes().all(|b| (b'0'..=b'9').contains(&b))
+            // val.len() == 9 && val[..9].chars().all(char::is_numeric)
         }),
     ];
 
