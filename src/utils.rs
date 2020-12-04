@@ -1,19 +1,20 @@
 pub use lazy_static;
 
-pub use std::str::FromStr;
 pub use boolinator::Boolinator;
+pub use std::convert::TryInto;
+pub use std::str::FromStr;
 // pub use fnv::FnvHasher;
 use fxhash::FxHashMap;
 use fxhash::FxHashSet;
 pub use itertools::Itertools;
+pub use itertools::{iproduct, izip};
+pub use rayon::prelude::*;
 pub use std::collections::HashSet;
 pub use std::fs::File;
 pub use std::hash::BuildHasherDefault;
 pub use std::io;
 pub use std::io::Read;
 pub use std::path::Path;
-pub use rayon::prelude::*;
-pub use itertools::{iproduct, izip};
 pub use std::{
     cmp::Reverse,
     collections::{BinaryHeap, HashMap},
@@ -25,11 +26,11 @@ pub type FMap<K, V> = FxHashMap<K, V>;
 // type FMap<K, V> = HashMap<K, V, BuildHasherDefault<FnvHasher>>;
 
 pub fn fmap<K, V>(cap: usize) -> FMap<K, V> {
-    FMap::with_capacity_and_hasher(cap, Default::default())
+    FMap::with_capacity_and_hasher(cap, std::hash::BuildHasherDefault::default())
 }
 
 pub fn fset<V>(cap: usize) -> FSet<V> {
-    FSet::with_capacity_and_hasher(cap, Default::default())
+    FSet::with_capacity_and_hasher(cap, std::hash::BuildHasherDefault::default())
 }
 
 pub fn read_input<P: AsRef<Path>>(p: P) -> io::Result<String> {

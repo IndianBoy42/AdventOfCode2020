@@ -42,6 +42,10 @@ pub fn part1(input: &str) -> u32 {
 }
 
 pub fn part2(input: &str) -> u32 {
+    part2_2(input)
+}
+
+pub fn part2_1(input: &str) -> u32 {
     let nums = input
         .lines()
         .map(u32::from_str)
@@ -54,8 +58,7 @@ pub fn part2(input: &str) -> u32 {
         .unwrap()
 }
 
-
-pub fn part2_2(input: &str) -> i32 {
+pub fn part2_2(input: &str) -> u32 {
     let nums = input
         .lines()
         .map(i32::from_str)
@@ -76,9 +79,11 @@ pub fn part2_2(input: &str) -> i32 {
         })
         .map(|(x, y, z)| x * y * z)
         .unwrap()
+        .try_into()
+        .unwrap()
 }
 
-pub fn part2_3(input: &str) -> i32 {
+pub fn part2_3(input: &str) -> u32 {
     let nums = input
         .lines()
         .map(i32::from_str)
@@ -102,6 +107,8 @@ pub fn part2_3(input: &str) -> i32 {
         .first()
         .copied()
         .unwrap()
+        .try_into()
+        .unwrap()
 }
 
 fn round_pow2(n: usize) -> usize {
@@ -123,7 +130,7 @@ pub fn part2fft(input: &str) -> usize {
 fn test1() {
     let input = read_input("input1.txt").unwrap();
     assert_eq!(part1(&input), 646779);
-    assert_eq!(part2(&input), 246191688);
+    assert_eq!(part2_1(&input), 246191688);
     assert_eq!(part2_2(&input), 246191688);
     assert_eq!(part2_3(&input), 246191688);
     // assert_eq!(part2fft(&input), 246191688);

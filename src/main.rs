@@ -10,7 +10,6 @@ fn main() {
     let input = utils::read_input("input1.txt").unwrap();
     dbg!(day1::part1(&input));
     dbg!(day1::part2(&input));
-    dbg!(day1::part2_2(&input));
 
     let input = utils::read_input("input2.txt").unwrap();
     dbg!(day2::part1(&input));
