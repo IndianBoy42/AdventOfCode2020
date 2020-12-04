@@ -1,7 +1,7 @@
 use crate::utils::*;
 
 pub fn part1(input: &str) -> usize {
-    let N = input.lines().next().unwrap().as_bytes().len();
+    let n = input.lines().next().unwrap().as_bytes().len();
     let check = |(right, down)| {
         input
             .lines()
@@ -9,7 +9,7 @@ pub fn part1(input: &str) -> usize {
             .enumerate()
             .filter(|(i, line)| {
                 line.bytes()
-                    .nth((i * right) % N)
+                    .nth((i * right) % n)
                     .map(|b| b == b'#')
                     .unwrap()
             })
@@ -20,7 +20,13 @@ pub fn part1(input: &str) -> usize {
     check((3, 1))
 }
 pub fn part2(input: &str) -> usize {
-    let N = input.lines().next().unwrap().as_bytes().len();
+    let n = input.lines().next().unwrap().as_bytes().len();
+    // let lines = input
+    //     .lines()
+    //     .fold(Vec::with_capacity(10000), |mut vec, line| {
+    //         vec.push(line);
+    //         vec
+    //     });
     let lines = input.lines().collect_vec();
     let check = |(right, down)| {
         lines
@@ -29,7 +35,7 @@ pub fn part2(input: &str) -> usize {
             .enumerate()
             .filter(|(i, line)| {
                 line.bytes()
-                    .nth((i * right) % N)
+                    .nth((i * right) % n)
                     .map(|b| b == b'#')
                     .unwrap()
             })

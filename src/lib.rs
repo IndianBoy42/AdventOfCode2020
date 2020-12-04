@@ -31,4 +31,3 @@ pub mod day4;
 pub mod utils;
 mod smol_map;
 
-use utils::*;
