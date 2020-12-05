@@ -6,31 +6,28 @@ fn pows() -> impl Iterator<Item = usize> {
     successors(Some(1), |prev| Some(prev * 2))
 }
 
+fn binparse(slice: &[u8], chk: impl FnMut(&u8) -> bool) -> usize {
+    slice
+        .iter()
+        .rev()
+        .map(chk)
+        .zip(pows())
+        .filter_map(|(v, pow)| v.as_some(pow))
+        .sum::<usize>()
+}
+
 fn parse(input: &str) -> impl Iterator<Item = usize> + '_ {
     input.lines().map(|line| {
-        let (l, r) = line.as_bytes().split_at(7);
-        let row = l
-            .iter()
-            .rev()
-            .map(|&c| c == b'B')
-            .zip(pows())
-            .filter_map(|(v, pow)| v.as_some(pow))
-            .sum::<usize>();
-        let col = r
-            .iter()
-            .rev()
-            .map(|&c| c == b'R')
-            .zip(pows())
-            .filter_map(|(v, pow)| v.as_some(pow))
-            .sum::<usize>();
-
-        row * 8 + col
+        let (l, r) = line.as_bytes()[..10].split_at(7);
+        binparse(l, |&c| c == b'B') * 8 + binparse(r, |&c| c == b'R')
+        // binparse(r, |&c| c == b'R' || c == b'B')
     })
 }
 
 pub fn part1(input: &str) -> usize {
     parse(input).max().unwrap()
 }
+
 pub fn part2(input: &str) -> usize {
     if false {
         let nums = {
@@ -44,14 +41,10 @@ pub fn part2(input: &str) -> usize {
             .unwrap()
     } else {
         let nums: BitSet<usize> = parse(input).collect();
-        // let (min, max) = minmax(&nums).unwrap();
-        let (min, max) = (
-            nums.iter().next().unwrap(),
-            nums.iter().last().unwrap(),
-        );
+
+        let (min, max) = (nums.iter().next().unwrap(), nums.iter().last().unwrap());
+
         (min..max).find(|&e| !nums.contains(e)).unwrap()
-        // let set = FSet::from_iter(nums);
-        // (min..max).find(|e| !set.contains(e)).unwrap()
     }
 }
 
