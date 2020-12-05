@@ -65,7 +65,7 @@ pub fn part2(input: &str) -> u32 {
 
     nums.iter()
         .find_map(|x| {
-            nums.iter().find_map(|num| {
+            nums.iter().take_while(|&num| num < x).find_map(|num| {
                 nums.contains(2020 - x - num)
                     .as_some((x, num, 2020 - x - num))
             })

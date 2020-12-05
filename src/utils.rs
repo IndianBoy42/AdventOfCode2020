@@ -51,15 +51,13 @@ macro_rules! blackhole {
 type MinHeap<T> = BinaryHeap<Reverse<T>>;
 
 pub fn firstlast<T>(vec: &[T]) -> Option<(&T, &T)> {
-    vec.split_first().map(|(first, rest)| {
-        rest.split_last()
-            .map_or((first, first), |(last, _)| (first, last))
-    })
+    vec.split_first()
+        .map(|(first, rest)| rest.last().map_or((first, first), |last| (first, last)))
 }
 
 pub fn firstlastex<T>(vec: &[T]) -> (Option<&T>, Option<&T>) {
     if let Some((first, rest)) = vec.split_first() {
-        (Some(first), rest.split_last().map(|(last, _)| last))
+        (Some(first), rest.last())
     } else {
         (None, None)
     }
@@ -72,7 +70,6 @@ pub fn minmax<T: Copy + PartialOrd>(it: impl IntoIterator<Item = T>) -> Option<(
         itertools::MinMaxResult::MinMax(a, b) => Some((a, b)),
     }
 }
-
 
 pub fn minmax_clone<T: Clone + PartialOrd>(it: impl IntoIterator<Item = T>) -> Option<(T, T)> {
     match it.into_iter().minmax() {

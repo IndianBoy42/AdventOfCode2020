@@ -1,3 +1,5 @@
+use std::hint::black_box;
+
 use crate::utils::*;
 
 fn parse<I: std::str::FromStr>(input: &str) -> impl Iterator<Item = (I, I, u8, &str)>
@@ -6,10 +8,11 @@ where
 {
     input
         .lines()
-        .map(|line| line.split(' ').collect_tuple().unwrap())
+        .map(|line| line.splitn(3, ' ').collect_tuple().unwrap())
         .map(|(range, letter, pwd)| {
             (
-                range.split('-').collect_tuple().unwrap(),
+                range.split_once('-').unwrap(),
+                // range.split('-').collect_tuple().unwrap(),
                 letter.as_bytes()[0],
                 // letter.chars().next().unwrap(),
                 pwd,
@@ -23,7 +26,7 @@ where
 pub fn part1(input: &str) -> usize {
     parse(input)
         .filter(|&(lower, upper, letter, pwd)| {
-            (lower..(upper+1)).contains(&pwd.bytes().filter(move |&c| c == letter).count())
+            (lower..=upper).contains(&pwd.bytes().filter(move |&c| c == letter).count())
         })
         .count()
 }
@@ -31,11 +34,15 @@ pub fn part1(input: &str) -> usize {
 pub fn part2(input: &str) -> usize {
     parse(input)
         .filter(|&(lower, upper, letter, pwd): &(usize, usize, _, _)| {
-            let a = pwd.as_bytes()[lower - 1];
-            let b = pwd.as_bytes()[upper - 1];
+            debug_assert!(pwd.len() >= upper);
+            debug_assert!(pwd.len() > lower);
+            let &a = unsafe { pwd.as_bytes().get_unchecked(lower - 1) };
+            let &b = unsafe { pwd.as_bytes().get_unchecked(upper - 1) };
             (a == letter) ^ (b == letter)
         })
         .count()
+    // black_box(parse::<usize>(input).for_each(drop));
+    // black_box(354)
 }
 
 #[test]

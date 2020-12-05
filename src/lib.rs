@@ -23,6 +23,8 @@
 #![feature(array_windows)]
 #![feature(peekable_next_if)]
 #![feature(str_split_once)]
+#![feature(test)]
+#![feature(const_panic)]
 
 pub mod day1;
 pub mod day2;
