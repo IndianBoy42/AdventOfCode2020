@@ -3,25 +3,26 @@ pub use lazy_static;
 pub use boolinator::Boolinator;
 pub use std::convert::TryInto;
 pub use std::str::FromStr;
-// pub use fnv::FnvHasher;
-use fxhash::FxHashMap;
-use fxhash::FxHashSet;
 pub use itertools::Itertools;
 pub use itertools::{iproduct, izip};
 pub use rayon::prelude::*;
+pub use std::cmp::Reverse;
 pub use std::collections::HashSet;
+pub use std::collections::{BinaryHeap, HashMap};
 pub use std::fs::File;
 pub use std::hash::BuildHasherDefault;
 pub use std::io;
 pub use std::io::Read;
 pub use std::path::Path;
-pub use std::{
-    cmp::Reverse,
-    collections::{BinaryHeap, HashMap},
-};
+pub use arrayvec::ArrayVec;
+pub use std::iter::FromIterator;
+pub use std::iter::successors;
 
+use fxhash::FxHashMap;
+use fxhash::FxHashSet;
 pub type FSet<T> = FxHashSet<T>;
 pub type FMap<K, V> = FxHashMap<K, V>;
+// pub use fnv::FnvHasher;
 // type FSet<T> = HashSet<T, BuildHasherDefault<FnvHasher>>;
 // type FMap<K, V> = HashMap<K, V, BuildHasherDefault<FnvHasher>>;
 
