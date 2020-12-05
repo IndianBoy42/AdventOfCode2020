@@ -7,6 +7,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     let input2 = utils::read_input("input2.txt").unwrap();
     let input3 = utils::read_input("input3.txt").unwrap();
     let input4 = utils::read_input("input4.txt").unwrap();
+    let input5 = utils::read_input("input5.txt").unwrap();
 
     c.bench_function("All Days", |b| {
         b.iter(|| {
@@ -19,6 +20,41 @@ pub fn criterion_benchmark(c: &mut Criterion) {
             day4::part1(black_box(&input4));
             day4::part2(black_box(&input4));
         })
+    });
+
+    c.bench_function("Day 1 Part 1", |b| {
+        b.iter(|| day1::part1(black_box(&input1)))
+    });
+    c.bench_function("Day 1 Part 2", |b| {
+        b.iter(|| day1::part2(black_box(&input1)))
+    });
+
+    c.bench_function("Day 2 Part 1", |b| {
+        b.iter(|| day2::part1(black_box(&input2)))
+    });
+    c.bench_function("Day 2 Part 2", |b| {
+        b.iter(|| day2::part2(black_box(&input2)))
+    });
+
+    c.bench_function("Day 3 Part 1", |b| {
+        b.iter(|| day3::part1(black_box(&input3)))
+    });
+    c.bench_function("Day 3 Part 2", |b| {
+        b.iter(|| day3::part2(black_box(&input3)))
+    });
+
+    c.bench_function("Day 4 Part 1", |b| {
+        b.iter(|| day4::part1(black_box(&input4)))
+    });
+    c.bench_function("Day 4 Part 2", |b| {
+        b.iter(|| day4::part2(black_box(&input4)))
+    });
+
+    c.bench_function("Day 5 Part 1", |b| {
+        b.iter(|| day5::part1(black_box(&input5)))
+    });
+    c.bench_function("Day 5 Part 2", |b| {
+        b.iter(|| day5::part2(black_box(&input5)))
     });
 }
 
