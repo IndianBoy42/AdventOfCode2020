@@ -4,7 +4,7 @@ use crate::utils::*;
 use arrayvec::ArrayVec;
 
 pub fn part1(input: &str) -> usize {
-    const FIELDS: &[&str; 7] = &["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
+    const REQUIRED: &[&str; 7] = &["byr", "ecl", "eyr", "hcl", "hgt", "iyr", "pid"];
 
     input
         .split("\n\n")
@@ -14,16 +14,10 @@ pub fn part1(input: &str) -> usize {
                 .map(|field| field.split_once(':').unwrap())
                 // .map(|field| field.split(':').collect_tuple().unwrap())
                 .map(|(l, _)| l);
-            fields.filter(|x| FIELDS.contains(x)).count() == 7
-            // let fields: ArrayVec<[&str; 8]> = fields.collect();
-            // (fields.len() > 7) || (fields.len() == 7 && FIELDS.iter().all(|req| fields.contains(&req)))
-            // if fields.len() < 7 {
-            // false
-            // } else if fields.len() > 7 {
-            // true
-            // } else {
-            // FIELDS.iter().all(|req| fields.contains(&req))
-            // }
+            // fields.filter(|x| REQUIRED.contains(x)).count() == 7
+            let fields: ArrayVec<[&str; 8]> = fields.collect();
+            // (fields.len() > 7) || (fields.len() == 7 && REQUIRED.iter().all(|req| fields.contains(&req)))
+            (fields.len() > 7) || (fields.len() == 7 && fields.iter().all(|fld| REQUIRED.contains(&fld)))
         })
         .count()
 }
