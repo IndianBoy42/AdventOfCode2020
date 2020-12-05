@@ -121,7 +121,7 @@ pub fn part2fft(input: &str) -> usize {
 }
 
 #[test]
-fn test1() {
+fn test() {
     let input = read_input("input1.txt").unwrap();
     assert_eq!(part1(&input), 646779);
     assert_eq!(part2_1(&input), 246191688);

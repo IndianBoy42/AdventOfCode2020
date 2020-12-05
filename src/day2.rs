@@ -23,8 +23,7 @@ where
 pub fn part1(input: &str) -> usize {
     parse(input)
         .filter(|&(lower, upper, letter, pwd)| {
-            (lower..=upper).contains(&pwd.bytes().filter(move |&c| c == letter).count())
-            // (lower..=upper).contains(&pwd.chars().filter(move |&c| c == letter).count())
+            (lower..(upper+1)).contains(&pwd.bytes().filter(move |&c| c == letter).count())
         })
         .count()
 }
@@ -40,7 +39,7 @@ pub fn part2(input: &str) -> usize {
 }
 
 #[test]
-fn test2() {
+fn test() {
     let input = read_input("input2.txt").unwrap();
     assert_eq!(part1(&input), 614);
     assert_eq!(part2(&input), 354);

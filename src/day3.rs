@@ -51,7 +51,7 @@ pub fn part2(input: &str) -> usize {
 }
 
 #[test]
-fn test3() {
+fn test() {
     let input = read_input("input3.txt").unwrap();
     assert_eq!(part1(&input), 265);
     assert_eq!(part2(&input), 3154761400);
