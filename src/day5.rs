@@ -6,21 +6,28 @@ fn pows() -> impl Iterator<Item = usize> {
     successors(Some(1), |prev| Some(prev * 2))
 }
 
-fn binparse(slice: &[u8], chk: impl FnMut(&u8) -> bool) -> usize {
+fn binparse2(slice: &[u8], chk: impl FnMut(&u8) -> bool) -> usize {
     slice
         .iter()
         .rev()
         .map(chk)
         .zip(pows())
-        .filter_map(|(v, pow)| v.as_some(pow))
+        .map(|(v, pow)| (v as usize) * pow)
+        // .map(|(v, pow)| ((-(v as isize)) as usize) & pow)
+        // .filter_map(|(v, pow)| v.as_some(pow))
         .sum::<usize>()
+}
+fn binparse(slice: &[u8], mut chk: impl FnMut(&u8) -> bool) -> usize {
+    slice
+        .iter()
+        .fold(0, |acc, v| (acc << 1) + (chk(v) as usize))
 }
 
 fn parse(input: &str) -> impl Iterator<Item = usize> + '_ {
     input.lines().map(|line| {
-        let (l, r) = line.as_bytes()[..10].split_at(7);
-        binparse(l, |&c| c == b'B') * 8 + binparse(r, |&c| c == b'R')
-        // binparse(r, |&c| c == b'R' || c == b'B')
+        // let (l, r) = line.as_bytes()[..10].split_at(7);
+        // binparse(l, |&c| c == b'B') * 8 + binparse(r, |&c| c == b'R')
+        binparse(&line.as_bytes()[..10], |&c| (c & 0b0100) == 0)
     })
 }
 
