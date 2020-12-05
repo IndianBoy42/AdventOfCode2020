@@ -29,23 +29,11 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    if false {
-        let nums = {
-            let mut nums = parse(input).collect_vec();
-            nums.sort_unstable();
-            nums
-        };
-        izip!(&nums[1..], &nums)
-            .find(|&(&a, &b)| (a - b) == 2)
-            .map(|(a, _)| a + 1)
-            .unwrap()
-    } else {
-        let nums: BitSet<usize> = parse(input).collect();
+    let nums: BitSet<usize> = parse(input).collect();
 
-        let (min, max) = (nums.iter().next().unwrap(), nums.iter().last().unwrap());
+    let (min, max) = (nums.iter().next().unwrap(), nums.iter().last().unwrap());
 
-        (min..max).find(|&e| !nums.contains(e)).unwrap()
-    }
+    (min..max).find(|&e| !nums.contains(e)).unwrap()
 }
 
 #[test]

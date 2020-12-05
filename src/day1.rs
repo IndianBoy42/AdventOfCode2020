@@ -38,40 +38,22 @@ pub fn part1(input: &str) -> u32 {
         .map(Result::unwrap)
         // .sorted().take_while(|&x| x < 2020)
         .filter(|&x| x < 2020)
-        .collect_vec();
+        .collect::<BitSet>();
 
-    let set = nums.iter().copied().collect::<BitSet>();
     nums.iter()
-        .find_map(|&num| set.contains(2020 - num).as_some((num, 2020 - num)))
+        .find_map(|num| nums.contains(2020 - num).as_some((num, 2020 - num)))
         .map(|(x, y)| x * y)
         .unwrap()
         .try_into()
         .unwrap()
     // find_sums_to(nums.len(), &nums, 2020)
-        // .map(|(x, y)| x * y)
-        // .unwrap()
-        // .try_into()
-        // .unwrap()
+    // .map(|(x, y)| x * y)
+    // .unwrap()
+    // .try_into()
+    // .unwrap()
 }
 
 pub fn part2(input: &str) -> u32 {
-    part2_2(input)
-}
-
-pub fn part2_1(input: &str) -> u32 {
-    let nums = input
-        .lines()
-        .map(u32::from_str)
-        .map(Result::unwrap)
-        .collect_vec();
-
-    iproduct!(&nums, &nums, &nums)
-        .find(|(&x, &y, &z)| (x + y + z) == 2020)
-        .map(|(&x, &y, &z)| x * y * z)
-        .unwrap()
-}
-
-pub fn part2_2(input: &str) -> u32 {
     let nums = input
         .lines()
         .map(usize::from_str)
@@ -79,16 +61,12 @@ pub fn part2_2(input: &str) -> u32 {
         // .sorted().take_while(|&x| x < 2020)
         .filter(|&x| x < 2020)
         .sorted()
-        .collect_vec();
-
-    // let mut set = fset(nums.len());
-    // set.extend(nums.iter().copied());
-    let set = nums.iter().copied().collect::<BitSet>();
+        .collect::<BitSet>();
 
     nums.iter()
-        .find_map(|&x| {
-            nums.iter().find_map(|&num| {
-                set.contains(2020 - x - num)
+        .find_map(|x| {
+            nums.iter().find_map(|num| {
+                nums.contains(2020 - x - num)
                     .as_some((x, num, 2020 - x - num))
             })
         })
@@ -117,8 +95,6 @@ pub fn part2fft(input: &str) -> usize {
 fn test() {
     let input = read_input("input1.txt").unwrap();
     assert_eq!(part1(&input), 646779);
-    assert_eq!(part2_1(&input), 246191688);
-    assert_eq!(part2_2(&input), 246191688);
-    // assert_eq!(part2_3(&input), 246191688);
+    assert_eq!(part2(&input), 246191688);
     // assert_eq!(part2fft(&input), 246191688);
 }
