@@ -48,29 +48,31 @@ type Fields<'a> = SmolMap<'a>;
 
 fn validate2(fields: &Fields) -> bool {
     let byr = || {
-        fields
-            .get("byr")
-            .map_or(false, |&val| (1920..(2002+1)).contains(&val.parse().unwrap()))
+        fields.get("byr").map_or(false, |&val| {
+            (1920..(2002 + 1)).contains(&val.parse().unwrap())
+        })
     };
     let iyr = || {
-        fields
-            .get("iyr")
-            .map_or(false, |&val| (2010..(2020+1)).contains(&val.parse().unwrap()))
+        fields.get("iyr").map_or(false, |&val| {
+            (2010..(2020 + 1)).contains(&val.parse().unwrap())
+        })
     };
     let eyr = || {
-        fields
-            .get("eyr")
-            .map_or(false, |&val| (2020..(2030+1)).contains(&val.parse().unwrap()))
+        fields.get("eyr").map_or(false, |&val| {
+            (2020..(2030 + 1)).contains(&val.parse().unwrap())
+        })
     };
     let hgt = || {
         fields.get("hgt").map_or(false, |&val| -> bool {
             let cm = || {
-                val.strip_suffix("cm")
-                    .map_or(false, |val| (150..(193+1)).contains(&val.parse().unwrap_or(0)))
+                val.strip_suffix("cm").map_or(false, |val| {
+                    (150..(193 + 1)).contains(&val.parse().unwrap_or(0))
+                })
             };
             let inch = || {
-                val.strip_suffix("in")
-                    .map_or(false, |val| (59..(76+1)).contains(&val.parse().unwrap_or(0)))
+                val.strip_suffix("in").map_or(false, |val| {
+                    (59..(76 + 1)).contains(&val.parse().unwrap_or(0))
+                })
             };
 
             cm() || inch()
@@ -89,7 +91,7 @@ fn validate2(fields: &Fields) -> bool {
     };
     let pid = || {
         fields.get("pid").map_or(false, |&val| {
-            val.len() == 9 && val.bytes().all(|b| (b'0'..(b'9'+1)).contains(&b))
+            val.len() == 9 && val.bytes().all(|b| (b'0'..=b'9').contains(&b))
         })
     };
     byr() && iyr() && eyr() && hgt() && hcl() && ecl() && pid()
