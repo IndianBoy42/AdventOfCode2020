@@ -43,16 +43,22 @@ impl<'a> SmolMap<'a> {
 type Fields<'a> = SmolMap<'a>;
 
 fn validate2(fields: &Fields) -> bool {
-    let ok = [
+    let byr = || {
         fields
             .get("byr")
-            .map_or(false, |&val| (1920..=2002).contains(&val.parse().unwrap())),
+            .map_or(false, |&val| (1920..=2002).contains(&val.parse().unwrap()))
+    };
+    let iyr = || {
         fields
             .get("iyr")
-            .map_or(false, |&val| (2010..=2020).contains(&val.parse().unwrap())),
+            .map_or(false, |&val| (2010..=2020).contains(&val.parse().unwrap()))
+    };
+    let eyr = || {
         fields
             .get("eyr")
-            .map_or(false, |&val| (2020..=2030).contains(&val.parse().unwrap())),
+            .map_or(false, |&val| (2020..=2030).contains(&val.parse().unwrap()))
+    };
+    let hgt = || {
         fields.get("hgt").map_or(false, |&val| -> bool {
             // let cm = val.ends_with("cm")
             //     && (150..=193).contains(&val[..val.len() - 2].parse().unwrap_or(0));
@@ -66,20 +72,28 @@ fn validate2(fields: &Fields) -> bool {
                 .map_or(false, |val| (59..=76).contains(&val.parse().unwrap_or(0)));
 
             cm || inch
-        }),
+        })
+    };
+    let hcl = || {
         fields.get("hcl").map_or(false, |&val| {
-            val.starts_with('#') && val[1..7].bytes().all(|x| x.is_ascii_hexdigit())
-        }),
+            val.strip_prefix('#')
+                .map_or(false, |val| val.bytes().all(|x| x.is_ascii_hexdigit()))
+            // val.starts_with('#') && val[1..7].bytes().all(|x| x.is_ascii_hexdigit())
+        })
+    };
+    let ecl = || {
         fields.get("ecl").map_or(false, |&val| {
             ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].contains(&val)
-        }),
+        })
+    };
+    let pid = || {
         fields.get("pid").map_or(false, |&val| {
-            val.len() == 9 && val[..9].bytes().all(|b| (b'0'..=b'9').contains(&b))
+            val.len() == 9 && val.bytes().all(|b| (b'0'..=b'9').contains(&b))
+            // val.len() == 9 && val[..9].bytes().all(|b| (b'0'..=b'9').contains(&b))
             // val.len() == 9 && val[..9].chars().all(char::is_numeric)
-        }),
-    ];
-
-    ok.iter().copied().all(|x| x)
+        })
+    };
+    byr() && iyr() && eyr() && hgt() && hcl() && ecl() && pid()
 }
 
 pub fn part2(input: &str) -> usize {
