@@ -28,12 +28,17 @@ pub fn part1(input: &str) -> usize {
     parse(input).max().unwrap()
 }
 
+// pub fn part2(input: &str) -> usize {
+//     let nums: BitSet<usize> = parse(input).collect();
+//     let (min, max) = (nums.iter().next().unwrap(), nums.iter().last().unwrap());
+//     (min..max).find(|&e| !nums.contains(e)).unwrap()
+// }
 pub fn part2(input: &str) -> usize {
-    let nums: BitSet<usize> = parse(input).collect();
-
-    let (min, max) = (nums.iter().next().unwrap(), nums.iter().last().unwrap());
-
-    (min..max).find(|&e| !nums.contains(e)).unwrap()
+    let (min, max, sum) = parse(input).fold((usize::MAX, usize::MIN, 0), |(min, max, sum), v| {
+        (min.min(v), max.max(v), sum + v)
+    });
+    ((max - min + 1) * (min + max) / 2) - sum
+    // (min..(max + 1)).sum::<usize>() - sum
 }
 
 #[test]
