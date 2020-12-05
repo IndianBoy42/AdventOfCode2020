@@ -12,18 +12,17 @@ use crate::utils::*;
 //     iproduct!(input.clone().into_iter(), input.into_iter()).find(|&(x, y)| (x + y) == tar)
 // }
 
-pub fn find_sums_to<I, It: IntoIterator<Item = I> + Clone>(
+pub fn find_sums_to<It: IntoIterator<Item = usize> + Clone>(
     inputsize: usize,
     input: &It,
-    tar: I,
-) -> Option<(I, I)>
+    tar: usize,
+) -> Option<(usize, usize)>
 where
     It::IntoIter: Clone,
-    I: Copy + std::hash::Hash + std::cmp::Eq + std::ops::Sub<Output = I>,
 {
-    let mut set = fset(inputsize);
+    let mut set = BitSet::with_capacity(inputsize);
     for num in input.clone() {
-        if set.contains(&(tar - num)) {
+        if set.contains(tar - num) {
             return Some((num, tar - num));
         } else {
             set.insert(num);
@@ -35,18 +34,24 @@ where
 pub fn part1(input: &str) -> u32 {
     let nums = input
         .lines()
-        .map(u32::from_str)
+        .map(FromStr::from_str)
         .map(Result::unwrap)
         // .sorted().take_while(|&x| x < 2020)
         .filter(|&x| x < 2020)
         .collect_vec();
 
-    // iproduct!(&nums, &nums)
-    // nums.iter().tuple_combinations()
-    // .find(|(&x, &y)| (x + y) == 2020)
-    find_sums_to(nums.len(), &nums, 2020)
+    let set = nums.iter().copied().collect::<BitSet>();
+    nums.iter()
+        .find_map(|&num| set.contains(2020 - num).as_some((num, 2020 - num)))
         .map(|(x, y)| x * y)
         .unwrap()
+        .try_into()
+        .unwrap()
+    // find_sums_to(nums.len(), &nums, 2020)
+        // .map(|(x, y)| x * y)
+        // .unwrap()
+        // .try_into()
+        // .unwrap()
 }
 
 pub fn part2(input: &str) -> u32 {
@@ -69,36 +74,24 @@ pub fn part2_1(input: &str) -> u32 {
 pub fn part2_2(input: &str) -> u32 {
     let nums = input
         .lines()
-        .map(i32::from_str)
+        .map(usize::from_str)
         .map(Result::unwrap)
         // .sorted().take_while(|&x| x < 2020)
         .filter(|&x| x < 2020)
         .sorted()
         .collect_vec();
 
-    let mut set = fset(nums.len());
-    set.extend(nums.iter().copied());
+    // let mut set = fset(nums.len());
+    // set.extend(nums.iter().copied());
+    let set = nums.iter().copied().collect::<BitSet>();
 
     nums.iter()
         .find_map(|&x| {
             nums.iter().find_map(|&num| {
-                set.contains(&(2020 - x - num))
+                set.contains(2020 - x - num)
                     .as_some((x, num, 2020 - x - num))
             })
-            // .find(|&&num| set.contains(&(2020 - x - num)))
-            // .map(|&num| (x, num, 2020 - x - num))
-            
-            // set.clear();
-            // for &num in &nums {
-            //     if set.contains(&(2020 - x - num)) {
-            //         return Some((x, num, 2020 - x - num));
-            //     } else {
-            //         set.insert(num);
-            //     }
-            // }
-            // None
         })
-        // .find_map(|&x| find_sums_to(&nums, 2020 - x).map(|(y, z)| (x, y, z)))
         .map(|(x, y, z)| x * y * z)
         .unwrap()
         .try_into()
