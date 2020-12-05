@@ -1,22 +1,22 @@
 pub use lazy_static;
 
+pub use arrayvec::ArrayVec;
 pub use boolinator::Boolinator;
-pub use std::convert::TryInto;
-pub use std::str::FromStr;
 pub use itertools::Itertools;
 pub use itertools::{iproduct, izip};
 pub use rayon::prelude::*;
 pub use std::cmp::Reverse;
 pub use std::collections::HashSet;
 pub use std::collections::{BinaryHeap, HashMap};
+pub use std::convert::TryInto;
 pub use std::fs::File;
 pub use std::hash::BuildHasherDefault;
 pub use std::io;
 pub use std::io::Read;
-pub use std::path::Path;
-pub use arrayvec::ArrayVec;
-pub use std::iter::FromIterator;
 pub use std::iter::successors;
+pub use std::iter::FromIterator;
+pub use std::path::Path;
+pub use std::str::FromStr;
 
 use fxhash::FxHashMap;
 use fxhash::FxHashSet;
@@ -62,5 +62,22 @@ pub fn firstlastex<T>(vec: &[T]) -> (Option<&T>, Option<&T>) {
         (Some(first), rest.split_last().map(|(last, _)| last))
     } else {
         (None, None)
+    }
+}
+
+pub fn minmax<T: Copy + PartialOrd>(it: impl IntoIterator<Item = T>) -> Option<(T, T)> {
+    match it.into_iter().minmax() {
+        itertools::MinMaxResult::NoElements => None,
+        itertools::MinMaxResult::OneElement(a) => Some((a, a)),
+        itertools::MinMaxResult::MinMax(a, b) => Some((a, b)),
+    }
+}
+
+
+pub fn minmax_clone<T: Clone + PartialOrd>(it: impl IntoIterator<Item = T>) -> Option<(T, T)> {
+    match it.into_iter().minmax() {
+        itertools::MinMaxResult::NoElements => None,
+        itertools::MinMaxResult::OneElement(a) => Some((a.clone(), a)),
+        itertools::MinMaxResult::MinMax(a, b) => Some((a, b)),
     }
 }

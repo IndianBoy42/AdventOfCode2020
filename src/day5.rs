@@ -28,14 +28,6 @@ fn parse(input: &str) -> impl Iterator<Item = usize> + '_ {
     })
 }
 
-fn minmax(it: impl IntoIterator<Item = usize>) -> Option<(usize, usize)> {
-    match it.into_iter().minmax() {
-        itertools::MinMaxResult::NoElements => None,
-        itertools::MinMaxResult::OneElement(a) => Some((a, a)),
-        itertools::MinMaxResult::MinMax(a, b) => Some((a, b)),
-    }
-}
-
 pub fn part1(input: &str) -> usize {
     parse(input).max().unwrap()
 }
@@ -51,11 +43,13 @@ pub fn part2(input: &str) -> usize {
             .map(|(a, _)| a + 1)
             .unwrap()
     } else {
-        let nums = parse(input).collect_vec();
-        let (min, max) = minmax(nums.iter().copied()).unwrap();
-
-        let set: BitSet<usize> = nums.into_iter().collect();
-        (min..max).find(|&e| !set.contains(e)).unwrap()
+        let nums: BitSet<usize> = parse(input).collect();
+        // let (min, max) = minmax(&nums).unwrap();
+        let (min, max) = (
+            nums.iter().next().unwrap(),
+            nums.iter().last().unwrap(),
+        );
+        (min..max).find(|&e| !nums.contains(e)).unwrap()
         // let set = FSet::from_iter(nums);
         // (min..max).find(|e| !set.contains(e)).unwrap()
     }
