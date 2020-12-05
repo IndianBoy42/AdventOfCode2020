@@ -9,13 +9,21 @@ pub fn part1(input: &str) -> usize {
     input
         .split("\n\n")
         .filter(|passport| {
-            let fields: ArrayVec<[&str; 8]> = passport
+            let fields = passport
                 .split_ascii_whitespace()
                 .map(|field| field.split_once(':').unwrap())
                 // .map(|field| field.split(':').collect_tuple().unwrap())
-                .map(|(l, _)| l)
-                .collect();
-            FIELDS.iter().copied().all(|req| fields.contains(&req))
+                .map(|(l, _)| l);
+            fields.filter(|x| FIELDS.contains(x)).count() == 7
+            // let fields: ArrayVec<[&str; 8]> = fields.collect();
+            // (fields.len() > 7) || (fields.len() == 7 && FIELDS.iter().all(|req| fields.contains(&req)))
+            // if fields.len() < 7 {
+            // false
+            // } else if fields.len() > 7 {
+            // true
+            // } else {
+            // FIELDS.iter().all(|req| fields.contains(&req))
+            // }
         })
         .count()
 }
@@ -23,7 +31,6 @@ pub fn part1(input: &str) -> usize {
 struct SmolMap<'a> {
     arr: ArrayVec<[(&'a str, &'a str); 8]>,
 }
-
 impl<'a> FromIterator<(&'a str, &'a str)> for SmolMap<'a> {
     fn from_iter<I: IntoIterator<Item = (&'a str, &'a str)>>(iter: I) -> Self {
         SmolMap {
@@ -60,25 +67,22 @@ fn validate2(fields: &Fields) -> bool {
     };
     let hgt = || {
         fields.get("hgt").map_or(false, |&val| -> bool {
-            // let cm = val.ends_with("cm")
-            //     && (150..=193).contains(&val[..val.len() - 2].parse().unwrap_or(0));
-            // let inch = val.ends_with("in")
-            //     && (59..=76).contains(&val[..val.len() - 2].parse().unwrap_or(0));
-            let cm = val
-                .strip_suffix("cm")
-                .map_or(false, |val| (150..=193).contains(&val.parse().unwrap_or(0)));
-            let inch = val
-                .strip_suffix("in")
-                .map_or(false, |val| (59..=76).contains(&val.parse().unwrap_or(0)));
+            let cm = || {
+                val.strip_suffix("cm")
+                    .map_or(false, |val| (150..=193).contains(&val.parse().unwrap_or(0)))
+            };
+            let inch = || {
+                val.strip_suffix("in")
+                    .map_or(false, |val| (59..=76).contains(&val.parse().unwrap_or(0)))
+            };
 
-            cm || inch
+            cm() || inch()
         })
     };
     let hcl = || {
         fields.get("hcl").map_or(false, |&val| {
             val.strip_prefix('#')
                 .map_or(false, |val| val.bytes().all(|x| x.is_ascii_hexdigit()))
-            // val.starts_with('#') && val[1..7].bytes().all(|x| x.is_ascii_hexdigit())
         })
     };
     let ecl = || {
@@ -89,8 +93,6 @@ fn validate2(fields: &Fields) -> bool {
     let pid = || {
         fields.get("pid").map_or(false, |&val| {
             val.len() == 9 && val.bytes().all(|b| (b'0'..=b'9').contains(&b))
-            // val.len() == 9 && val[..9].bytes().all(|b| (b'0'..=b'9').contains(&b))
-            // val.len() == 9 && val[..9].chars().all(char::is_numeric)
         })
     };
     byr() && iyr() && eyr() && hgt() && hcl() && ecl() && pid()
