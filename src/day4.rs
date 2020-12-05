@@ -53,11 +53,19 @@ fn validate2(fields: &Fields) -> bool {
         fields
             .get("eyr")
             .map_or(false, |&val| (2020..=2030).contains(&val.parse().unwrap())),
-        fields.get("hgt").map_or(false, |&val| {
-            (val.ends_with("cm")
-                && (150..=193).contains(&val[..val.len() - 2].parse().unwrap_or(0)))
-                || (val.ends_with("in")
-                    && (59..=76).contains(&val[..val.len() - 2].parse().unwrap_or(0)))
+        fields.get("hgt").map_or(false, |&val| -> bool {
+            // let cm = val.ends_with("cm")
+            //     && (150..=193).contains(&val[..val.len() - 2].parse().unwrap_or(0));
+            // let inch = val.ends_with("in")
+            //     && (59..=76).contains(&val[..val.len() - 2].parse().unwrap_or(0));
+            let cm = val
+                .strip_suffix("cm")
+                .map_or(false, |val| (150..=193).contains(&val.parse().unwrap_or(0)));
+            let inch = val
+                .strip_suffix("in")
+                .map_or(false, |val| (59..=76).contains(&val.parse().unwrap_or(0)));
+
+            cm || inch
         }),
         fields.get("hcl").map_or(false, |&val| {
             val.starts_with('#') && val[1..7].bytes().all(|x| x.is_ascii_hexdigit())
