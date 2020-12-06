@@ -5,10 +5,13 @@ pub struct U32Set {
     val: u32,
 }
 impl U32Set {
+    pub const fn new(val: u32) -> U32Set {
+        U32Set { val }
+    }
     pub fn intersect_with(&mut self, other: U32Set) {
         self.val &= other.val;
     }
-    pub fn intersect(self, other: U32Set) -> U32Set {
+    pub const fn intersect(self, other: U32Set) -> U32Set {
         U32Set {
             val: self.val & other.val,
         }
@@ -16,15 +19,15 @@ impl U32Set {
     pub fn union_with(&mut self, other: U32Set) {
         self.val |= other.val;
     }
-    pub fn union(self, other: U32Set) -> U32Set {
+    pub const fn union(self, other: U32Set) -> U32Set {
         U32Set {
             val: self.val | other.val,
         }
     }
-    pub fn len(self) -> usize {
+    pub const fn len(self) -> usize {
         self.val.count_ones() as _
     }
-    pub fn is_empty(self) -> bool {
+    pub const fn is_empty(self) -> bool {
         self.len() == 0
     }
 }

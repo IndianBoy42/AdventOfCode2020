@@ -20,7 +20,8 @@ pub fn part1(input: &str) -> usize {
         .sum()
 }
 pub fn part2(input: &str) -> usize {
-    let full = (0..26).collect::<U32Set>();
+    let full = U32Set::new(0x3_FF_FF_FF);
+    // let full = (0..26).collect::<U32Set>();
 
     input
         .split("\n\n")
@@ -28,8 +29,9 @@ pub fn part2(input: &str) -> usize {
             group
                 .lines()
                 .map(|line| answers(line.bytes()))
-                // .fold(full, U32Set::intersect)
-                .fold(full, U32Set::intersect)
+                .fold1(U32Set::intersect)
+                .unwrap()
+            // .fold(full, U32Set::intersect)
         })
         .map(U32Set::len)
         .sum()

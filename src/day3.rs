@@ -2,31 +2,15 @@ use crate::utils::*;
 
 pub fn part1(input: &str) -> usize {
     let n = input.lines().next().unwrap().as_bytes().len();
-    let check = |(right, down)| {
-        input
-            .lines()
-            .step_by(down)
-            .enumerate()
-            .filter(|(i, line)| {
-                line.bytes()
-                    .nth((i * right) % n)
-                    .map(|b| b == b'#')
-                    .unwrap()
-            })
-            .count()
-        // .fold(0, |a, b| a + b as usize)
-    };
 
-    check((3, 1))
+    input
+        .lines()
+        .enumerate()
+        .filter(|(i, line)| line.bytes().nth((i * 3) % n).map(|b| b == b'#').unwrap())
+        .count()
 }
 pub fn part2(input: &str) -> usize {
     let n = input.lines().next().unwrap().as_bytes().len();
-    // let lines = input
-    //     .lines()
-    //     .fold(Vec::with_capacity(10000), |mut vec, line| {
-    //         vec.push(line);
-    //         vec
-    //     });
     let lines = input.lines().collect_vec();
     let check = |(right, down)| {
         lines
