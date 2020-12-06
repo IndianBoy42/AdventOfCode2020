@@ -5,6 +5,7 @@ pub fn part1(input: &str) -> usize {
 
     input
         .split("\n\n")
+        .par_bridge()
         .filter(|passport| {
             let fields = passport
                 .split_ascii_whitespace()
@@ -146,7 +147,7 @@ fn validate2(fields: &Fields) -> bool {
 
 pub fn part2(input: &str) -> usize {
     input
-        .split("\n\n")
+        .split("\n\n").par_bridge()
         .filter(|passport| {
             let fields = passport
                 .split_ascii_whitespace()
