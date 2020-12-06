@@ -1,6 +1,7 @@
 pub use lazy_static;
 
 pub use arrayvec::ArrayVec;
+pub use bit_set::BitSet;
 pub use boolinator::Boolinator;
 pub use itertools::Itertools;
 pub use itertools::{iproduct, izip};
@@ -44,9 +45,9 @@ pub fn pause() {
     io::stdin().read_line(&mut String::new()).unwrap();
 }
 
-macro_rules! blackhole {
-    ($($l:expr),+) => {};
-}
+// macro_rules! blackhole {
+    // ($($l:expr),+) => {};
+// }
 
 type MinHeap<T> = BinaryHeap<Reverse<T>>;
 

@@ -1,7 +1,5 @@
 use std::mem::size_of;
 
-use bit_set::BitSet;
-
 use crate::utils::*;
 
 // pub fn find_sums_to<I, It: IntoIterator<Item = I> + Clone>(input: It, tar: I) -> Option<(I, I)>

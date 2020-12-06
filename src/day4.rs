@@ -1,7 +1,4 @@
-use std::iter::FromIterator;
-
 use crate::utils::*;
-use arrayvec::ArrayVec;
 
 pub fn part1(input: &str) -> usize {
     const REQUIRED: &[&str; 7] = &["byr", "ecl", "eyr", "hcl", "hgt", "iyr", "pid"];

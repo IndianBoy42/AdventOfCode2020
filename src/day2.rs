@@ -1,5 +1,3 @@
-use std::hint::black_box;
-
 use crate::utils::*;
 
 fn parse<I: std::str::FromStr>(input: &str) -> impl Iterator<Item = (I, I, u8, &str)>
