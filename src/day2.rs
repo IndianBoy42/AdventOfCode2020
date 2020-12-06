@@ -1,11 +1,11 @@
 use crate::utils::*;
 
-fn parse<I: std::str::FromStr>(input: &str) -> impl Iterator<Item = (I, I, u8, &str)>
+fn parse<I: std::str::FromStr>(input: &str) -> impl ParallelIterator<Item = (I, I, u8, &str)>
 where
-    <I as std::str::FromStr>::Err: std::fmt::Debug,
+    <I as std::str::FromStr>::Err: std::fmt::Debug, I: Send
 {
     input
-        .lines()
+        .par_lines()
         .map(|line| line.splitn(3, ' ').collect_tuple().unwrap())
         .map(|(range, letter, pwd)| {
             (
