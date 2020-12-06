@@ -31,6 +31,7 @@ pub mod day2;
 pub mod day3;
 pub mod day4;
 pub mod day5;
-pub mod utils;
+pub mod day6;
 mod smol_map;
-
+pub mod utils;
+pub mod u32set;
