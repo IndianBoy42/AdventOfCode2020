@@ -1,4 +1,4 @@
-use core::sync::atomic::{self, AtomicBool};
+use core::sync::atomic::{self, AtomicBool, AtomicI32};
 use crossbeam::channel;
 use std::time::Instant;
 
@@ -69,6 +69,7 @@ fn solve(program: &[(Ins, i32)]) -> (i32, i32) {
 
 pub fn part2(input: &str) -> i32 {
     // part2brute(input)
+    // part2mt(input)
     part2smart(input)
 }
 
@@ -152,8 +153,7 @@ fn part2smart(input: &str) -> i32 {
     let mut acc = 0;
     let mut pc = 0;
     loop {
-        let (ins, arg): (_, i32) = program[pc as usize];
-
+        let (ins, arg) = program[pc as usize];
         match ins {
             INS_ACC => acc += arg,
             INS_JMP => {
@@ -175,7 +175,7 @@ fn part2smart(input: &str) -> i32 {
         pc += 1;
     }
 
-    return acc;
+    unreachable!()
 }
 
 pub fn part1(input: &str) -> i32 {
@@ -189,20 +189,18 @@ fn part2mt(input: &str) -> i32 {
 
     // let start = Instant::now();
     let finished = AtomicBool::default();
+    let result = AtomicI32::default();
 
     let res = crossbeam::scope(|scope| {
-        const NTHREADS: usize = 4;
+        const NTHREADS: usize = 8;
 
         let program = &program;
         let threads = (0..NTHREADS)
             .map(|thread_idx| {
-                // For sending the result back
-                let (s, r) = channel::bounded(1);
-                let s2 = s.clone();
                 let finished = &finished;
+                let result = &result;
 
-                let th = scope.spawn(move |_| {
-                    let s = s;
+                scope.spawn(move |_| {
                     let mut exe = program.clone();
                     let iter = program
                         .iter()
@@ -210,7 +208,7 @@ fn part2mt(input: &str) -> i32 {
                         .skip(thread_idx)
                         .step_by(NTHREADS);
                     for (i, &(ins, _)) in iter {
-                        // Check for cancellation
+                        // Check for cancellation ocassionally
                         if i % 16 == 0 && finished.load(atomic::Ordering::Acquire) {
                             return;
                         }
@@ -227,45 +225,24 @@ fn part2mt(input: &str) -> i32 {
 
                         let (pc, acc) = solve(&exe);
                         if pc as usize == exe.len() {
-                            (s.send(acc)).unwrap();
+                            result.store(acc, atomic::Ordering::Release);
+                            finished.store(true, atomic::Ordering::Release);
+
                             return;
                         }
 
                         exe[i].0 = ins;
                     }
                     //not found, hopefully another thread finds
-                });
-                (th, r, s2)
+                })
             })
             .collect_vec();
-
-        // Select over the result recv channels of all threads
-        let mut sel = channel::Select::new();
-        for (_, r, _) in &threads {
-            sel.recv(r);
-        }
-        let sel = (sel.select());
-        // This thread found it
-        let selindex = sel.index();
-        // Complete the recv operation
-        let res = (sel.recv(&threads[selindex].1));
-        // Stop all the other threads
-        // threads
-        //     .iter()
-        //     .enumerate()
-        //     .filter(|&(i, _)| i != selindex)
-        //     .for_each(|(_, (_, _, cs, _, _))| {
-        //         (cs.send(true));
-        //     });
-        finished.store(true, atomic::Ordering::Release);
-
-        return res.unwrap();
     });
 
     // let dur = Instant::now() - start;
     // println!("{:?}", dur);
 
-    res.unwrap()
+    result.load(atomic::Ordering::Acquire)
 }
 
 fn part2brute(input: &str) -> i32 {
