@@ -80,49 +80,47 @@ fn part2smart(input: &str) -> i32 {
             mut pc: i32,
             program: &[(Ins, i32)],
             winning: &mut BitSet,
-            death: &mut BitSet,
+            allvisited: &mut BitSet,
         ) {
-            let mut visited = BitSet::with_capacity(program.len());
-            visited.insert(program.len());
+            let mut visited = allvisited.clone();
             loop {
-                if death.contains(pc as usize) {
-                    break;
-                }
                 if !visited.insert(pc as usize) {
-                    break;
-                }
-                if winning.contains(pc as usize) {
-                    pc = program.len() as _;
                     break;
                 }
 
                 let (ins, arg): (_, i32) = program[pc as usize];
 
                 match ins {
-                    INS_JMP => pc += arg - 1,
-                    _ => {}
+                    INS_JMP => pc += arg,
+                    _ => pc += 1,
                 }
-                pc += 1;
             }
 
-            if pc == program.len() as i32 {
+            // let newallvisited = visited.clone();
+            if winning.contains(pc as usize) {
+                visited.difference_with(&allvisited);
                 winning.union_with(&visited);
-            } else {
-                death.union_with(&visited);
             }
+            // *allvisited = newallvisited;
+            allvisited.union_with(&visited);
         }
 
-        let mut winning = BitSet::with_capacity(program.len());
-        let mut death = BitSet::with_capacity(program.len());
+        let mut winning = BitSet::with_capacity(1024);
+        winning.insert(program.len());
+        let mut allvisited = BitSet::with_capacity(1024);
+        allvisited.insert(program.len());
         for i in 0..program.len() {
-            if winning.contains(i) || death.contains(i) {
+            if allvisited.contains(i) {
                 continue;
             }
-            find_winning_from(i as _, &program, &mut winning, &mut death);
+            find_winning_from(i as _, &program, &mut winning, &mut allvisited);
         }
-        death.remove(program.len());
+        // let all = (0..program.len()).collect::<BitSet>();
+        // while let Some(i) = all.difference(&allvisited).next() {
+        // find_winning_from(i as _, &program, &mut winning, &mut allvisited);
+        // }
 
-        (winning, death)
+        (winning, allvisited)
     }
 
     // Solve from a starting state, assume no infinite loops for speeeed
@@ -147,7 +145,7 @@ fn part2smart(input: &str) -> i32 {
 
     let program = parse(input);
 
-    let (winning, death) = find_winning(&program);
+    let (winning, allvisited) = find_winning(&program);
     // dbg!(winning.union(&death).count());
 
     let mut acc = 0;
