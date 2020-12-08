@@ -1,6 +1,6 @@
-use core::sync::atomic::{self, AtomicBool, AtomicI16, AtomicI32};
-use crossbeam::channel;
-use std::time::Instant;
+use core::sync::atomic::{self, AtomicBool, AtomicI16};
+
+
 
 use crate::utils::*;
 
@@ -135,7 +135,7 @@ fn part2smart(input: &str) -> i16 {
 
     let program = parse(input);
 
-    let (winning, allvisited) = find_winning(&program);
+    let (winning, _allvisited) = find_winning(&program);
     // dbg!(winning.union(&death).count());
 
     let mut acc = 0;
@@ -171,17 +171,17 @@ pub fn part1(input: &str) -> i16 {
 }
 
 fn part2mt(input: &str) -> i16 {
-    let mut program = parse(input);
+    let program = parse(input);
 
     // let start = Instant::now();
     let finished = AtomicBool::default();
     let result = AtomicI16::default();
 
-    let res = crossbeam::scope(|scope| {
+    let _res = crossbeam::scope(|scope| {
         const NTHREADS: usize = 8;
 
         let program = &program;
-        let threads = (0..NTHREADS)
+        let _threads = (0..NTHREADS)
             .map(|thread_idx| {
                 let finished = &finished;
                 let result = &result;
@@ -249,7 +249,7 @@ fn part2onepass(input: &str) -> i16 {
             .iter()
             .enumerate()
             .rev()
-            .find(|(i, &(ins, arg))| ins == INS_JMP && arg < 0)
+            .find(|(_i, &(ins, arg))| ins == INS_JMP && arg < 0)
             .unwrap();
         if visited.contains(firstnegjmp) {
             return firstnegjmp as _;
@@ -277,7 +277,7 @@ fn part2onepass(input: &str) -> i16 {
                             .iter()
                             .enumerate()
                             .rev()
-                            .find(|(i, &(ins, arg))| ins == INS_JMP)
+                            .find(|(_i, &(ins, _arg))| ins == INS_JMP)
                             .unwrap();
                         if visited.contains(j) {
                             // println!("Found preceeding jump that was hit, {:?} {:?} {:?}", j, ins, arg );
