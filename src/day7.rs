@@ -28,48 +28,12 @@ fn bagmap(input: &str) -> FMap<&str, Vec<(i32, &str)>> {
                     }),
             )
         });
-    iter.collect()
-    // let mut map = fmap(4096);
-    // iter.for_each(|(l, r)| {
-        // map.insert(l, r);
-    // });
-    // map
-}
-
-fn invbagmap(input: &str) -> FMap<&str, Vec<(i32, &str)>> {
-    let contained = input
-        .lines()
-        .map(|line| line.split_once(" contain ").unwrap())
-        .flat_map(|(outer, inners)| {
-            let outer = outer.strip_suffix(" bags").unwrap();
-            inners
-                .strip_suffix('.')
-                .and_then(|s| (s != "no other bags").as_some(s))
-                .into_iter()
-                .flat_map(|inners| {
-                    inners.split(", ").map(|phrase| {
-                        phrase
-                            .strip_suffix(" bags")
-                            .or_else(|| phrase.strip_suffix(" bag"))
-                            .unwrap()
-                            .split_once(' ')
-                            .map(|(num, color)| (num.parse().unwrap(), color))
-                            .unwrap()
-                    })
-                })
-                .map(move |(num, contained)| (contained, (num, outer)))
-        });
-
-    let mut invmap = fmap(4096);
-
-    for (color, rhs) in contained {
-        // dbg!((color, rhs));
-        invmap
-            .entry(color)
-            .and_modify(|v: &mut Vec<_>| v.push(rhs))
-            .or_insert_with(|| vec![rhs]);
-    }
-    invmap
+    // iter.collect()
+    let mut map = fmap(2000);
+    iter.for_each(|(l, r)| {
+        map.insert(l, r);
+    });
+    map
 }
 
 fn invmap<'a>(map: &FMap<&'a str, Vec<(i32, &'a str)>>) -> FMap<&'a str, Vec<(i32, &'a str)>> {
@@ -77,7 +41,7 @@ fn invmap<'a>(map: &FMap<&'a str, Vec<(i32, &'a str)>>) -> FMap<&'a str, Vec<(i3
         .iter()
         .flat_map(|(&k, v)| v.iter().map(move |&(l, r)| (r, (l, k))));
 
-    let mut invmap = fmap(4096);
+    let mut invmap = fmap(2000);
 
     for (color, rhs) in contained {
         // dbg!((color, rhs));
@@ -87,6 +51,43 @@ fn invmap<'a>(map: &FMap<&'a str, Vec<(i32, &'a str)>>) -> FMap<&'a str, Vec<(i3
             .or_insert_with(|| vec![rhs]);
     }
     invmap
+}
+
+fn invbagmap(input: &str) -> FMap<&str, Vec<&str>> {
+    let contained = input
+        .lines()
+        .map(|line| line.split_once(" contain ").unwrap())
+        .flat_map(|(outer, inners)| {
+            let outer = outer.strip_suffix('s').unwrap();
+            inners
+                .strip_suffix('.')
+                .and_then(|s| (s != "no other bags").as_some(s))
+                .into_iter()
+                .flat_map(|inners| {
+                    inners.split(", ").map(|phrase| {
+                        phrase
+                            .strip_suffix('s')
+                            .unwrap_or(phrase)
+                            // .strip_suffix(" bags").or_else(|| phrase.strip_suffix(" bag")).unwrap()
+                            .split_once(' ')
+                            .map(|(_, color)| (color))
+                            .unwrap()
+                    })
+                })
+                .map(move |contained| (contained, outer))
+        });
+
+    let mut invmap = fmap(2000);
+
+    for (color, rhs) in contained {
+        // dbg!((color, rhs));
+        invmap
+            .entry(color)
+            .and_modify(|v: &mut Vec<_>| v.push(rhs))
+            .or_insert_with(|| vec![rhs]);
+    }
+
+    dbg!(invmap)
 }
 
 pub fn part1(input: &str) -> usize {
@@ -95,17 +96,12 @@ pub fn part1(input: &str) -> usize {
     let invmap = invbagmap(input);
 
     let mut queue: VecDeque<&str> = VecDeque::with_capacity(invmap.len());
-    queue.push_front("shiny gold");
+    queue.push_front("shiny gold bag");
     let mut found: FSet<&str> = fset(invmap.len());
 
     while let Some(next) = queue.pop_front() {
         if let Some(containers) = invmap.get(&next) {
-            queue.extend(
-                containers
-                    .iter()
-                    .map(|(_, container)| container)
-                    .filter(|color| found.insert(color)),
-            )
+            queue.extend(containers.iter().filter(|color| found.insert(color)))
         }
         // queue.extend(invmap.get(&next).into_iter().flat_map(|containers| {
         // containers
