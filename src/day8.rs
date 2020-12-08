@@ -1,4 +1,4 @@
-use core::sync::atomic::{self, AtomicBool, AtomicI32};
+use core::sync::atomic::{self, AtomicBool, AtomicI32, AtomicI16};
 use crossbeam::channel;
 use std::time::Instant;
 
@@ -8,7 +8,7 @@ type Ins<'a> = &'a str;
 const INS_ACC: Ins = "acc";
 const INS_JMP: Ins = "jmp";
 const INS_NOP: Ins = "nop";
-fn parse(input: &str) -> Vec<(Ins, i32)> {
+fn parse(input: &str) -> Vec<(Ins, i16)> {
     input
         .lines()
         .map(|line| line.split_once(' ').unwrap())
@@ -26,7 +26,7 @@ fn parse(input: &str) -> Vec<(Ins, i32)> {
 // const INS_ACC: Ins = Ins::ACC;
 // const INS_JMP: Ins = Ins::JMP;
 // const INS_NOP: Ins = Ins::NOP;
-// fn parse(input: &str) -> Vec<(Ins, i32)> {
+// fn parse(input: &str) -> Vec<(Ins, i16)> {
 //     input
 //         .lines()
 //         .map(|line| line.split_once(' ').unwrap())
@@ -44,7 +44,7 @@ fn parse(input: &str) -> Vec<(Ins, i32)> {
 //         .collect()
 // }
 
-fn solve(program: &[(Ins, i32)]) -> (i32, i32) {
+fn solve(program: &[(Ins, i16)]) -> (i16, i16) {
     let mut acc = 0;
     let mut visited = BitSet::with_capacity(program.len());
     visited.insert(program.len());
@@ -54,7 +54,7 @@ fn solve(program: &[(Ins, i32)]) -> (i32, i32) {
             break;
         }
 
-        let (ins, arg): (_, i32) = program[pc as usize];
+        let (ins, arg): (_, i16) = program[pc as usize];
 
         match ins {
             INS_ACC => acc += arg,
@@ -67,18 +67,18 @@ fn solve(program: &[(Ins, i32)]) -> (i32, i32) {
     (pc, acc)
 }
 
-pub fn part2(input: &str) -> i32 {
+pub fn part2(input: &str) -> i16 {
     // part2brute(input)
     // part2mt(input)
     part2smart(input)
 }
 
-fn part2smart(input: &str) -> i32 {
+fn part2smart(input: &str) -> i16 {
     // Find winning positions
-    fn find_winning(program: &[(Ins, i32)]) -> (BitSet, BitSet) {
+    fn find_winning(program: &[(Ins, i16)]) -> (BitSet, BitSet) {
         fn find_winning_from(
-            mut pc: i32,
-            program: &[(Ins, i32)],
+            mut pc: i16,
+            program: &[(Ins, i16)],
             winning: &mut BitSet,
             allvisited: &mut BitSet,
         ) {
@@ -88,7 +88,7 @@ fn part2smart(input: &str) -> i32 {
                     break;
                 }
 
-                let (ins, arg): (_, i32) = program[pc as usize];
+                let (ins, arg): (_, i16) = program[pc as usize];
 
                 match ins {
                     INS_JMP => pc += arg,
@@ -124,13 +124,13 @@ fn part2smart(input: &str) -> i32 {
     }
 
     // Solve from a starting state, assume no infinite loops for speeeed
-    fn solve_from(mut pc: i32, mut acc: i32, program: &[(Ins, i32)]) -> i32 {
+    fn solve_from(mut pc: i16, mut acc: i16, program: &[(Ins, i16)]) -> i16 {
         loop {
-            if pc >= program.len() as i32 {
+            if pc >= program.len() as i16 {
                 break;
             }
 
-            let (ins, arg): (_, i32) = program[pc as usize];
+            let (ins, arg): (_, i16) = program[pc as usize];
 
             match ins {
                 INS_ACC => acc += arg,
@@ -157,15 +157,15 @@ fn part2smart(input: &str) -> i32 {
             INS_JMP => {
                 // If it were nop would be win?
                 if winning.contains(pc + 1) {
-                    return solve_from(pc as i32 + 1, acc, &program);
+                    return solve_from(pc as i16 + 1, acc, &program);
                 }
                 // Just do normal shit
-                pc = (pc as i32 + arg - 1) as _;
+                pc = (pc as i16 + arg - 1) as _;
             }
             INS_NOP => {
                 // If it were jmp would be win?
-                if winning.contains((pc as i32 + arg) as _) {
-                    return solve_from(pc as i32 + arg, acc, &program);
+                if winning.contains((pc as i16 + arg) as _) {
+                    return solve_from(pc as i16 + arg, acc, &program);
                 }
             }
             _ => {}
@@ -176,18 +176,18 @@ fn part2smart(input: &str) -> i32 {
     unreachable!()
 }
 
-pub fn part1(input: &str) -> i32 {
+pub fn part1(input: &str) -> i16 {
     let program = parse(input);
 
     solve(&program).1
 }
 
-fn part2mt(input: &str) -> i32 {
+fn part2mt(input: &str) -> i16 {
     let mut program = parse(input);
 
     // let start = Instant::now();
     let finished = AtomicBool::default();
-    let result = AtomicI32::default();
+    let result = AtomicI16::default();
 
     let res = crossbeam::scope(|scope| {
         const NTHREADS: usize = 8;
@@ -243,7 +243,7 @@ fn part2mt(input: &str) -> i32 {
     result.load(atomic::Ordering::Acquire)
 }
 
-fn part2brute(input: &str) -> i32 {
+fn part2brute(input: &str) -> i16 {
     let mut program = parse(input);
 
     for (i, &(ins, _)) in program.clone().iter().enumerate() {
