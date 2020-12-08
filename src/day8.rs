@@ -49,11 +49,7 @@ fn solve(program: &[(Ins, i16)]) -> (i16, i16) {
     let mut visited = BitSet::with_capacity(program.len());
     visited.insert(program.len());
     let mut pc = 0;
-    loop {
-        if !visited.insert(pc as usize) {
-            break;
-        }
-
+    while visited.insert(pc as usize) {
         let (ins, arg): (_, i16) = program[pc as usize];
 
         match ins {
@@ -83,11 +79,7 @@ fn part2smart(input: &str) -> i16 {
             allvisited: &mut BitSet,
         ) {
             let mut visited = allvisited.clone();
-            loop {
-                if !visited.insert(pc as usize) {
-                    break;
-                }
-
+            while visited.insert(pc as usize) {
                 let (ins, arg): (_, i16) = program[pc as usize];
 
                 match ins {
@@ -125,11 +117,7 @@ fn part2smart(input: &str) -> i16 {
 
     // Solve from a starting state, assume no infinite loops for speeeed
     fn solve_from(mut pc: i16, mut acc: i16, program: &[(Ins, i16)]) -> i16 {
-        loop {
-            if pc >= program.len() as i16 {
-                break;
-            }
-
+        while pc < program.len() as i16 {
             let (ins, arg): (_, i16) = program[pc as usize];
 
             match ins {
@@ -172,8 +160,6 @@ fn part2smart(input: &str) -> i16 {
         }
         pc += 1;
     }
-
-    unreachable!()
 }
 
 pub fn part1(input: &str) -> i16 {
