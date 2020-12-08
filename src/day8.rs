@@ -66,8 +66,8 @@ fn solve(program: &[(Ins, i16)]) -> (i16, i16) {
 pub fn part2(input: &str) -> i16 {
     // part2brute(input)
     // part2mt(input)
-    // part2smart(input)
-    part2onepass(input)
+    part2smart(input)
+    // part2onepass(input)
 }
 
 fn part2smart(input: &str) -> i16 {
