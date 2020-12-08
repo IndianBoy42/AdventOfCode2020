@@ -1,4 +1,4 @@
-use core::sync::atomic::{self, AtomicBool, AtomicI32, AtomicI16};
+use core::sync::atomic::{self, AtomicBool, AtomicI16, AtomicI32};
 use crossbeam::channel;
 use std::time::Instant;
 
@@ -66,7 +66,8 @@ fn solve(program: &[(Ins, i16)]) -> (i16, i16) {
 pub fn part2(input: &str) -> i16 {
     // part2brute(input)
     // part2mt(input)
-    part2smart(input)
+    // part2smart(input)
+    part2onepass(input)
 }
 
 fn part2smart(input: &str) -> i16 {
@@ -92,9 +93,10 @@ fn part2smart(input: &str) -> i16 {
             if winning.contains(pc as usize) {
                 visited.difference_with(&allvisited);
                 winning.union_with(&visited);
+                allvisited.union_with(&visited);
+            } else {
+                *allvisited = visited;
             }
-            // *allvisited = newallvisited;
-            allvisited.union_with(&visited);
         }
 
         let mut winning = BitSet::with_capacity(1024);
@@ -227,6 +229,91 @@ fn part2mt(input: &str) -> i16 {
     // println!("{:?}", dur);
 
     result.load(atomic::Ordering::Acquire)
+}
+
+fn part2onepass(input: &str) -> i16 {
+    fn find_swap(program: &[(Ins, i16)]) -> i16 {
+        // First run, trace instruction flow till infinite loop
+        let mut visited = BitSet::with_capacity(program.len());
+        let mut pc = 0;
+        while visited.insert(pc as usize) {
+            let (ins, arg): (_, i16) = program[pc as usize];
+
+            match ins {
+                INS_JMP => pc += arg,
+                _ => pc += 1,
+            }
+        }
+
+        let (firstnegjmp, _) = program
+            .iter()
+            .enumerate()
+            .rev()
+            .find(|(i, &(ins, arg))| ins == INS_JMP && arg < 0)
+            .unwrap();
+        if visited.contains(firstnegjmp) {
+            return firstnegjmp as _;
+        }
+        let mut landingarea = (firstnegjmp..program.len() + 1).collect::<BitSet>();
+
+        loop {
+            let iteration = program[..firstnegjmp]
+                .iter()
+                .enumerate()
+                .rev()
+                .find_map(|(i, &(ins, arg))| {
+                    let visitedi = visited.contains(i);
+                    let landsi = landingarea.contains((i as i16 + arg) as usize);
+
+                    // dbg!(i, ins, arg, visitedi, landsi);
+
+                    if ins == INS_NOP && visitedi && landsi {
+                        // println!("Found unhit NOP that could land us in the good area, {:?} {:?} {:?} {:?} {:?}", i, ins, arg, visitedi, landsi);
+                        return Some(Some(i));
+                    } else if ins == INS_JMP && !visitedi && landsi && !landingarea.contains(i) {
+                        // println!("Found unhit JMP that could land us in the good area, {:?} {:?} {:?} {:?} {:?}", i, ins, arg, visitedi, landsi);
+                        // Look for preceeding JMP
+                        let (j, _) = program[..i]
+                            .iter()
+                            .enumerate()
+                            .rev()
+                            .find(|(i, &(ins, arg))| ins == INS_JMP)
+                            .unwrap();
+                        if visited.contains(j) {
+                            // println!("Found preceeding jump that was hit, {:?} {:?} {:?}", j, ins, arg );
+                            return Some(Some(j));
+                        } else {
+                            // println!("Found preceeding jump that was not hit, {:?} {:?} {:?}", j, ins, arg );
+                            // Add new landing area and exit the loop, start search again from the top
+                            landingarea.extend((j + 1)..(i + 1));
+                            return Some(None);
+                        }
+                    } else {
+                        None
+                    }
+                })
+                .unwrap();
+
+            if let Some(j) = iteration {
+                // println!("Finished finding swap {}", j);
+                return j as _;
+            }
+
+            // println!("Oh shit here we go again");
+        }
+    }
+
+    let mut program = parse(input);
+
+    let i = find_swap(&program);
+    let (ref mut ins, _) = program[i as usize];
+    *ins = match *ins {
+        INS_NOP => INS_JMP,
+        INS_JMP => INS_NOP,
+        _ => unreachable!(),
+    };
+
+    solve(&program).1
 }
 
 fn part2brute(input: &str) -> i16 {
