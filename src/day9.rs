@@ -50,9 +50,8 @@ fn find_range2<T: Copy + Ord + Eq + Sub<Output = T>>(acc: &[T], tar: T) -> (usiz
     (comb.find_map(|((i, x), (j, y))| ((y - x) == tar).as_some((i + 1, j)))).unwrap()
 }
 
+#[allow(clippy::comparison_chain)]
 fn find_range<T: Copy + Ord + Eq + Sub<Output = T>>(acc: &[T], tar: T) -> (usize, usize) {
-    use std::cmp::Ordering::*;
-
     let mut it = acc.iter().copied().enumerate().peekable();
     let mut jt = it.clone();
 
@@ -61,11 +60,13 @@ fn find_range<T: Copy + Ord + Eq + Sub<Output = T>>(acc: &[T], tar: T) -> (usize
         let &(j, y) = jt.peek().unwrap();
 
         let sum = y - x;
-        match sum.cmp(&tar) {
-            Less => jt.next(),
-            Greater => it.next(),
-            Equal => return (i + 1, j),
-        };
+        if sum < tar {
+            jt.next();
+        } else if sum > tar {
+            it.next();
+        } else {
+            return (i + 1, j);
+        }
     }
 }
 
@@ -73,24 +74,18 @@ fn find_range_direct<T>(nums: &[T], tar: T) -> (usize, usize)
 where
     T: Copy + Ord + Eq + Default + AddAssign + SubAssign,
 {
-    use std::cmp::Ordering::*;
-
     let mut it = nums.iter().copied().enumerate().peekable();
     let mut jt = it.clone();
 
     let mut sum = T::default();
     while sum != tar {
-        match sum.cmp(&tar) {
-            Less => {
-                let (j, y) = jt.next().unwrap();
-                sum += y;
-            }
-            Greater => {
-                let (i, x) = it.next().unwrap();
-                sum -= x;
-            }
-            Equal => unreachable!(),
-        };
+        if sum < tar {
+            let (j, y) = jt.next().unwrap();
+            sum += y;
+        } else {
+            let (i, x) = it.next().unwrap();
+            sum -= x;
+        }
     }
 
     let &(i, x) = it.peek().unwrap();
