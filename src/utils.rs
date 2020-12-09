@@ -1,4 +1,4 @@
-pub use lazy_static;
+// pub use lazy_static;
 
 pub use arrayvec::ArrayVec;
 pub use bit_set::BitSet;

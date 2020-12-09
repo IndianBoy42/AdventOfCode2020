@@ -1,0 +1,5 @@
+ndarray = "0.14.0"
+bitvec = "0.19.4"
+regex = "1.4.2"
+lazy_static = "1.4.0"
+derive_more = "0.99.11"

@@ -25,6 +25,8 @@
 #![feature(str_split_once)]
 #![feature(test)]
 #![feature(const_panic)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
 
 pub mod day1;
 pub mod day2;
