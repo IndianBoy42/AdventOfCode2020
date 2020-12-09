@@ -15,14 +15,17 @@ where
 
 fn weakness<T, const W: usize>(nums: &[T]) -> T
 where
-    T: Copy + Add<T>,
+    T: Copy + Add<T> + Send + Sync,
     <T as Add>::Output: PartialEq<T>,
 {
-    nums.windows(W + 1)
+    // nums.par_windows(26)
+    // .find_map_any(|window| {
+    nums.array_windows::<26>()
         .find_map(|window| {
             let (&last, rest) = window.split_last().unwrap();
             let iter = rest.iter().copied();
-            let comb = iproduct!(iter.clone(), iter);
+            let comb = iter.tuple_combinations();
+            // let comb = iproduct!(iter.clone(), iter);
             // let comb = iter
             // .clone()
             // .enumerate()

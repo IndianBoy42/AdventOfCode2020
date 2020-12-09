@@ -87,7 +87,7 @@ fn invbagmap(input: &str) -> FMap<&str, Vec<&str>> {
             .or_insert_with(|| vec![rhs]);
     }
 
-    dbg!(invmap)
+    invmap
 }
 
 pub fn part1(input: &str) -> usize {
