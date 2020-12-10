@@ -21,6 +21,7 @@ where
     // nums.par_windows(26)
     // .find_map_any(|window| {
     nums.array_windows::<26>()
+        // .find_map(|&[ref rest @ .., last]| {
         .find_map(|window| {
             let (&last, rest) = window.split_last().unwrap();
             let iter = rest.iter().copied();
