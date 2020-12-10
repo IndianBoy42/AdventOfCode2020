@@ -65,14 +65,12 @@ pub fn part21(input: &str) -> i64 {
     nums.insert(0);
 
     if false {
-        let grps = nums.iter().tuple_windows().group_by(|(b, a)| a - b);
-
-        let prod = grps
+        nums.iter()
+            .tuple_windows()
+            .group_by(|(b, a)| a - b)
             .into_iter()
             .filter_map(|(d, grp)| (d == 1).as_some(grp.count()).map(trib))
-            .product();
-
-        prod
+            .product()
     } else {
         let (cons, acc, _) = nums
             .into_iter()
@@ -141,7 +139,7 @@ pub fn part2big(input: &str) -> BigUint {
     let mut num = table.pop_back().unwrap();
     while &num % 10u32 == Zero::zero() {
         num /= 10u32;
-    };
+    }
     num % 1_000_000_000_000_000u64
 }
 

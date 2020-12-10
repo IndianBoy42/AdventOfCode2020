@@ -2,7 +2,8 @@ use crate::utils::*;
 
 fn parse<I: std::str::FromStr>(input: &str) -> impl ParallelIterator<Item = (I, I, u8, &str)>
 where
-    <I as std::str::FromStr>::Err: std::fmt::Debug, I: Send
+    <I as std::str::FromStr>::Err: std::fmt::Debug,
+    I: Send,
 {
     input
         .par_lines()

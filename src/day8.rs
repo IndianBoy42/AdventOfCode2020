@@ -1,7 +1,5 @@
 use core::sync::atomic::{self, AtomicBool, AtomicI16};
 
-
-
 use crate::utils::*;
 
 type Ins<'a> = &'a str;
