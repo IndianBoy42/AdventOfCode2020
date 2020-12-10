@@ -18,8 +18,11 @@ pub fn part10(input: &str) -> usize {
 
     let it = nums.array_windows().map(|[a, b]| b - a);
 
-    let ones = it.filter(|&d| d == 1).count() + 1;
+    assert_eq!(it.clone().filter(|&d| d > 3).count(), 0);
+    // assert_eq!(it.clone().filter(|&d| d == 2).count(), 0);
     // let threes = it.clone().filter(|&d| d == 3).count() + 1;
+    let ones = it.filter(|&d| d == 1).count() + 1;
+    // assert_eq!(threes + ones - 1, nums.len());
     let threes = nums.len() - ones + 1;
 
     ones * threes
@@ -99,13 +102,40 @@ pub fn part2(input: &str) -> i64 {
     }
     let mut last = 0;
     for (i, n) in nums.into_iter().enumerate().skip(3) {
-        let n = n as usize;
         last = table[(n - 3)..n].iter().sum();
         table[n] = last;
     }
 
     last
 }
+
+use num_bigint::BigUint;
+use num_traits::{Zero, One};
+pub fn part2big(input: &str) -> BigUint {
+    // let nums = nums(input);
+    let nums = input // Essentially counting sort
+        .lines()
+        .map(|line| line.parse().unwrap())
+        .collect::<BitSet>();
+
+    let mut table = vec![Zero::zero(); nums.len() * 3];
+    let table = &mut table[..];
+    table[0] = One::one();
+
+    for (i, n) in nums.iter().enumerate().take(3) {
+        table[n] = table[(n.max(3) - 3)..n].iter().sum();
+    }
+    let mut last = BigUint::zero();
+    for (i, n) in nums.into_iter().enumerate().skip(3) {
+        last = table[(n - 3)..n].iter().sum();
+        table[n] = last.clone();
+        // if last == 0 { panic!("{:?}", &table[(n - 3)..=n]) }
+        // if i % 100 == 0 {  dbg!(last);}
+    }
+
+    last
+}
+
 pub fn part20(input: &str) -> i64 {
     let nums = nums(input);
 
