@@ -31,7 +31,7 @@ pub fn part10(input: &str) -> usize {
     ones * threes
 }
 
-pub fn part20(input: &str) -> i64 {
+pub fn part21(input: &str) -> i64 {
     let mut nums: Vec<_> = input.lines().map(|line| line.parse().unwrap()).collect();
     nums.push(0);
     nums.sort_unstable();
@@ -56,6 +56,24 @@ pub fn part20(input: &str) -> i64 {
         .product();
     
         prod
+}
+pub fn part20(input: &str) -> i64 {
+    let nums = nums(input);
+
+    let mut table = vec![0; *nums.last().unwrap() as usize + 1];
+    let table = &mut table[..];
+    table[0] = 1;
+    
+    for (i, n) in nums.iter().enumerate().take(3) {
+        let n = *n as usize;
+        table[n] = table[(n.max(3)-3)..n].iter().sum();
+    }
+    for (i, n) in nums.into_iter().enumerate().skip(3) {
+        let n = n as usize;
+        table[n] = table[(n-3)..n].iter().sum();
+    }
+
+    *table.last().unwrap()
 }
 pub fn part2(input: &str) -> i64 {
     let nums = nums(input);
