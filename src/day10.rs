@@ -27,7 +27,6 @@ pub fn part10(input: &str) -> usize {
 
 pub fn part1(input: &str) -> usize {
     type S = BitSet;
-    // type S = FSet<i32>;
     let nums: S = input.lines().map(|line| line.parse().unwrap()).collect();
 
     // let ones = nums.iter().tuple_windows().map(|(a, b)| b - a).filter(|&d| d == 1).count() + 1;
@@ -37,31 +36,52 @@ pub fn part1(input: &str) -> usize {
     ones * threes
 }
 
-pub fn part21(input: &str) -> i64 {
-    let mut nums: Vec<_> = input.lines().map(|line| line.parse().unwrap()).collect();
-    nums.push(0);
-    nums.sort_unstable();
-
-    let grps = nums.array_windows().group_by(|[b, a]| a - b);
-
-    fn trib(c: usize) -> i64 {
-        // if you wanna be pedantic, you can actually calculate this for however many long you want
-        // precomputation is still O(n), although it would be slower so
-        match c {
-            1 => 1,
-            2 => 2,
-            3 => 4,
-            4 => 7,
-            _ => unreachable!(),
-        }
+fn trib(c: usize) -> i64 {
+    // if you wanna be pedantic, you can actually calculate this for however many long you want
+    // precomputation is still O(n), although it would be slower so
+    match c {
+        1 => 1,
+        2 => 2,
+        3 => 4,
+        4 => 7,
+        _ => 1,
     }
+}
 
-    let prod = grps
-        .into_iter()
-        .filter_map(|(d, grp)| (d == 1).as_some(grp.count()).map(trib))
-        .product();
+pub fn part21(input: &str) -> i64 {
+    // let mut nums: Vec<_> = input.lines().map(|line| line.parse().unwrap()).collect();
+    // nums.push(0);
+    // nums.sort_unstable();
+    // let grps = nums.array_windows().group_by(|[b, a]| a - b);
+    let mut nums = input // Essentially counting sort
+        .lines()
+        .map(|line| line.parse().unwrap())
+        .collect::<BitSet>();
+    nums.insert(0);
 
-    prod
+    if false {
+        let grps = nums.iter().tuple_windows().group_by(|(b, a)| a - b);
+
+        let prod = grps
+            .into_iter()
+            .filter_map(|(d, grp)| (d == 1).as_some(grp.count()).map(trib))
+            .product();
+
+        prod
+    } else {
+        let (cons, acc, _) = nums
+            .into_iter()
+            .skip(1)
+            .fold((0, 1, 0), |(cons, acc, prev), next| {
+                let diff = next - prev;
+                if diff == 3 {
+                    (0, acc * trib(cons), next)
+                } else {
+                    (cons + 1, acc, next)
+                }
+            });
+        acc * trib(cons)
+    }
 }
 pub fn part2(input: &str) -> i64 {
     // let nums = nums(input);
