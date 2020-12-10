@@ -21,7 +21,13 @@ criterion = "0.3.3"
 
 [profile.release]
 panic = "abort"
-lto = true
+codegen-units = 1
+lto = "fat"
+
+[profile.bench]
+panic = "abort"
+codegen-units = 1
+lto = "thin"
 
 [[bench]]
 name = "alldays"
