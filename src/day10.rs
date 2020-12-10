@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::utils::*;
 
 fn nums(input: &str) -> Vec<i16> {
@@ -110,30 +112,37 @@ pub fn part2(input: &str) -> i64 {
 }
 
 use num_bigint::BigUint;
-use num_traits::{Zero, One};
+use num_traits::{One, Zero};
 pub fn part2big(input: &str) -> BigUint {
-    // let nums = nums(input);
-    let nums = input // Essentially counting sort
-        .lines()
-        .map(|line| line.parse().unwrap())
-        .collect::<BitSet>();
+    let nums = nums(input);
 
-    let mut table = vec![Zero::zero(); nums.len() * 3];
-    let table = &mut table[..];
-    table[0] = One::one();
-
-    for (i, n) in nums.iter().enumerate().take(3) {
-        table[n] = table[(n.max(3) - 3)..n].iter().sum();
+    let mut table: VecDeque<BigUint> = std::iter::once(Zero::zero()).collect();
+    let mut ti = 0;
+    for i in 0..3 {
+        table.push_back(
+            ((0..i)
+                .filter(|&j| (nums[i] - nums[j]) <= 3)
+                .map(|j| &table[i - j])
+                .sum::<BigUint>())
+                + BigUint::one(),
+        );
     }
-    let mut last = BigUint::zero();
-    for (i, n) in nums.into_iter().enumerate().skip(3) {
-        last = table[(n - 3)..n].iter().sum();
-        table[n] = last.clone();
-        // if last == 0 { panic!("{:?}", &table[(n - 3)..=n]) }
-        // if i % 100 == 0 {  dbg!(last);}
+    for i in 3..nums.len() {
+        table.push_back(
+            ((i - 3)..i)
+                .filter(|&j| (nums[i] - nums[j]) <= 3)
+                .map(|j| &table[4 - (i - j)])
+                .sum(),
+        );
+        table.pop_front();
+        ti += 1;
     }
 
-    last
+    let mut num = table.pop_back().unwrap();
+    while &num % 10u32 == Zero::zero() {
+        num /= 10u32;
+    };
+    num % 1_000_000_000_000_000u64
 }
 
 pub fn part20(input: &str) -> i64 {
@@ -149,7 +158,7 @@ pub fn part20(input: &str) -> i64 {
             }
         }
     }
-    for i in 3..table.len() {
+    for i in 3..nums.len() {
         for j in (i - 3)..i {
             if (nums[i] - nums[j]) <= 3 {
                 table[i] += table[j];
@@ -165,4 +174,5 @@ fn test() {
     let input = read_input("input10.txt").unwrap();
     assert_eq!(part1(&input), 3000);
     assert_eq!(part2(&input), 193434623148032);
+    // assert_eq!(day10::part2big(&input), part2(&input).try_into().unwrap());
 }

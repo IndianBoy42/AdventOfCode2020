@@ -105,6 +105,13 @@ pub fn criterion_benchmark(c: &mut Criterion) {
             day9::part2(black_box(&input9));
         })
     });
+
+    let mut longbenches = c.benchmark_group("Long Benchmarks");
+    longbenches.sample_size(10);
+    let input10big = utils::read_input("10.in").unwrap();
+    longbenches.bench_function("Day 10 Part BIG", |b| {
+        b.iter(|| day10::part2big(black_box(&input10big)))
+    });
 }
 
 criterion_group!(benches, criterion_benchmark);
