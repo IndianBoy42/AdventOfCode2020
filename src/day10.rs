@@ -1,14 +1,19 @@
 use crate::utils::*;
 
 fn nums(input: &str) -> Vec<i16> {
-    let mut nums: Vec<_> = input.lines().map(|line| line.parse().unwrap()).collect();
-    // nums.push(0);
-    // nums.push(nums.iter().max().unwrap() + 3);
-    nums.sort_unstable();
-    nums
+    input // Essentially counting sort
+        .lines()
+        .map(|line| line.parse().unwrap())
+        .collect::<BitSet>()
+        .into_iter()
+        .map(|x| x as _)
+        .collect()
+    // let mut nums: Vec<_> = input.lines().map(|line| line.parse().unwrap()).collect();
+    // nums.sort_unstable();
+    // nums
 }
 
-pub fn part1(input: &str) -> usize {
+pub fn part10(input: &str) -> usize {
     let nums = nums(input);
 
     let it = nums.array_windows().map(|[a, b]| b - a);
@@ -20,11 +25,12 @@ pub fn part1(input: &str) -> usize {
     ones * threes
 }
 
-pub fn part10(input: &str) -> usize {
+pub fn part1(input: &str) -> usize {
     type S = BitSet;
     // type S = FSet<i32>;
     let nums: S = input.lines().map(|line| line.parse().unwrap()).collect();
 
+    // let ones = nums.iter().tuple_windows().map(|(a, b)| b - a).filter(|&d| d == 1).count() + 1;
     let ones = nums.iter().filter(|&d| nums.contains(d - 1)).count() + 1;
     let threes = nums.len() - ones + 1;
 
@@ -35,7 +41,7 @@ pub fn part21(input: &str) -> i64 {
     let mut nums: Vec<_> = input.lines().map(|line| line.parse().unwrap()).collect();
     nums.push(0);
     nums.sort_unstable();
-    
+
     let grps = nums.array_windows().group_by(|[b, a]| a - b);
 
     fn trib(c: usize) -> i64 {
@@ -46,7 +52,7 @@ pub fn part21(input: &str) -> i64 {
             2 => 2,
             3 => 4,
             4 => 7,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 
@@ -54,28 +60,33 @@ pub fn part21(input: &str) -> i64 {
         .into_iter()
         .filter_map(|(d, grp)| (d == 1).as_some(grp.count()).map(trib))
         .product();
-    
-        prod
-}
-pub fn part20(input: &str) -> i64 {
-    let nums = nums(input);
 
-    let mut table = vec![0; *nums.last().unwrap() as usize + 1];
-    let table = &mut table[..];
-    table[0] = 1;
-    
-    for (i, n) in nums.iter().enumerate().take(3) {
-        let n = *n as usize;
-        table[n] = table[(n.max(3)-3)..n].iter().sum();
-    }
-    for (i, n) in nums.into_iter().enumerate().skip(3) {
-        let n = n as usize;
-        table[n] = table[(n-3)..n].iter().sum();
-    }
-
-    *table.last().unwrap()
+    prod
 }
 pub fn part2(input: &str) -> i64 {
+    // let nums = nums(input);
+    let nums = input // Essentially counting sort
+        .lines()
+        .map(|line| line.parse().unwrap())
+        .collect::<BitSet>();
+
+    let mut table = vec![0; nums.len() * 3];
+    let table = &mut table[..];
+    table[0] = 1;
+
+    for (i, n) in nums.iter().enumerate().take(3) {
+        table[n] = table[(n.max(3) - 3)..n].iter().sum();
+    }
+    let mut last = 0;
+    for (i, n) in nums.into_iter().enumerate().skip(3) {
+        let n = n as usize;
+        last = table[(n - 3)..n].iter().sum();
+        table[n] = last;
+    }
+
+    last
+}
+pub fn part20(input: &str) -> i64 {
     let nums = nums(input);
 
     let mut table = vec![0; nums.len()];
