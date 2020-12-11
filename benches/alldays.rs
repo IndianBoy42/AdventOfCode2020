@@ -83,6 +83,14 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| day10::part2(black_box(&input10)))
     });
 
+    let input11 = utils::read_input("input11.txt").unwrap();
+    c.bench_function("Day 11 Part 1", |b| {
+        b.iter(|| day11::part1(black_box(&input11)))
+    });
+    c.bench_function("Day 11 Part 2", |b| {
+        b.iter(|| day11::part2(black_box(&input11)))
+    });
+
     c.bench_function("All Days", |b| {
         b.iter(|| {
             day1::part1(black_box(&input1));
