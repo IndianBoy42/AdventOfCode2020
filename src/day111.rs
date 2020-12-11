@@ -1,7 +1,7 @@
 use std::mem::swap;
 use std::vec;
 
-use ndarray::{azip, par_azip, s, Array2};
+use ndarray::{azip, par_azip, s, Array2, ArrayView2, ArrayViewMut2};
 
 use crate::grid::Grid2D;
 use crate::utils::*;
@@ -177,6 +177,71 @@ fn step_part2_mut(map: &Grid, new: &mut Grid, neighbours: &FMap<(i32, i32), Vec<
     par_azip!((index (x,y), tile in &map.arr, new in &mut new.arr) {
         if *tile != 0 {*new = f(((x as _,y as _), tile));}
     });
+}
+
+fn pad(map: &Grid) -> Array2<u8> {
+    let [x, y]: [_; 2] = map.arr.shape().try_into().unwrap();
+    let mut padded = Array2::<u8>::zeros((x + 2, y + 2));
+    let slice = padded.slice_mut(s![1..=x, 1..=y]);
+    azip! {
+        (i in slice, &j in &map.arr) {
+            *i = j;
+        }
+    };
+    padded
+}
+fn step_part1_mut2(map: ArrayView2<u8>, mut new: ArrayViewMut2<u8>) {
+    let [x, y]: [_; 2] = map.shape().try_into().unwrap();
+    par_azip! {
+        (window in map.windows((3,3)), new in new.slice_mut(s![1..(x-1), 1..(y-1)])) {
+            let occ = || window.iter().filter(|&&tile| tile == OCCUPIED).count();
+            *new = match window[(1,1)] {
+                0 => 0,
+                OCCUPIED => {
+                    if occ() >= 5 {
+                        EMPTY
+                    } else {
+                        OCCUPIED
+                    }
+                }
+                EMPTY => {
+                    if occ() == 0 {
+                        OCCUPIED
+                    } else {
+                        EMPTY
+                    }
+                }
+                rest => rest,
+                // _ => continue,
+            };
+        }
+    };
+}
+
+pub fn part12(input: &str) -> usize {
+    let mut grid = parse_grid(input);
+    let mut grid = pad(&grid);
+    let mut grid2 = grid.clone();
+
+    loop {
+        step_part1_mut2(grid.view(), grid2.view_mut());
+        step_part1_mut2(grid2.view(), grid.view_mut());
+        // swap(&mut grid, &mut grid2);
+
+        let same = ndarray::Zip::from(&grid)
+            .and(&grid2)
+            .into_par_iter()
+            // .fold(true, |acc, &a, &b| acc && (a == b));
+            .all(|(&a, &b)| a == b);
+        // .map(|(&a, &b)| (a == b))
+        // .reduce(|| true, |a, b| a && b)
+
+        if same {
+            break;
+        }
+    }
+
+    grid.iter().filter(|&&t| t == OCCUPIED).count()
 }
 
 pub fn part1(input: &str) -> usize {
