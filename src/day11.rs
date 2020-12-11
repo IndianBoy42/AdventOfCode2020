@@ -1,9 +1,11 @@
+use std::mem::swap;
 use std::vec;
 
 use crate::utils::*;
 
 type Grid = FMap<(i32, i32), u8>;
-
+// wrap Vec<Vec<>> or NDArray for the Grid (should make a library)
+ 
 fn parse_grid(input: &str) -> Grid {
     let it = input.lines().enumerate().flat_map(|(i, line)| {
         line.bytes()
@@ -34,20 +36,22 @@ const NEIGHBOURS_STEP: [(i32, i32); 8] = [
 
 fn print_grid(map: &Grid) {}
 
-const DONT_PARALLELIZE: bool = false;
-
 fn pre_neighbours2(map: &Grid) -> FMap<(i32, i32), Vec<(i32, i32)>> {
     fn compute(map: &Grid, x: i32, y: i32) -> Vec<(i32, i32)> {
         NEIGHBOURS_STEP
             .iter()
-            .map(|&(xs, ys)| {
-                std::iter::successors(Some((x, y)), |&(x, y)| Some((x + xs, y + ys)))
-                    .skip(1)
-                    .take(100)
+            .filter_map(|&(xs, ys)| {
+                std::iter::successors(Some((x + xs, y + ys)), |&(x, y)| Some((x + xs, y + ys)))
+                    // .take(100)
+                    .take_while(|(x, y)| (0..100).contains(x) && (0..100).contains(y))
                     .find(|coord| map.contains_key(coord))
-                    .unwrap_or_else(|| (x + xs, y + ys))
+                // .unwrap_or_else(|| (x + xs, y + ys))
             })
-            .collect()
+            .fold(Vec::with_capacity(8), |mut acc, v| {
+                acc.push(v);
+                acc
+            })
+        // .collect()
     }
 
     map.par_iter()
@@ -55,66 +59,72 @@ fn pre_neighbours2(map: &Grid) -> FMap<(i32, i32), Vec<(i32, i32)>> {
         .collect()
 }
 
-fn step_part1_mut(map: &Grid, new: &mut Grid) {
-    for (&(x, y), &tile) in map {
+fn pre_neighbours1(map: &Grid) -> FMap<(i32, i32), Vec<(i32, i32)>> {
+    fn compute(map: &Grid, x: i32, y: i32) -> Vec<(i32, i32)> {
+        NEIGHBOURS_STEP
+            .iter()
+            .filter_map(|&(xs, ys)| {
+                std::iter::successors(Some((x + xs, y + ys)), |&(x, y)| Some((x + xs, y + ys)))
+                    // .take(100)
+                    .take_while(|(x, y)| (0..100).contains(x) && (0..100).contains(y))
+                    .find(|coord| map.contains_key(coord))
+                // .unwrap_or_else(|| (x + xs, y + ys))
+            })
+            .fold(Vec::with_capacity(8), |mut acc, v| {
+                acc.push(v);
+                acc
+            })
+        // .collect()
+    }
+
+    map.par_iter()
+        .map(|(&(x, y), _)| ((x, y), compute(map, x, y)))
+        .collect()
+}
+
+fn step_part1_mut(map: &Grid, new: &mut Grid) -> bool {
+    let mut chg = false;
+
+    let mut f = |(&(x, y), &tile), new: &mut u8| {
         let neighbours = NEIGHBOURS_STEP.iter().map(|&(i, j)| (x + i, y + j));
 
         let occ = neighbours
-            .filter(|coord| {
-                map.get(coord)
-                    .map(|&tile| tile == OCCUPIED)
-                    .unwrap_or(false)
-            })
+            .filter_map(|coord| map.get(&coord))
+            .filter(|&&tile| tile == OCCUPIED)
             .count();
 
         let getocc = occ == 0;
         let getempty = occ >= 4;
 
-        match tile {
-            OCCUPIED if getempty => *new.get_mut(&(x, y)).unwrap() = EMPTY,
-            EMPTY if getocc => *new.get_mut(&(x, y)).unwrap() = OCCUPIED,
-            _ => {}
+        *new = match tile {
+            OCCUPIED if getempty => {
+                chg |= true;
+                EMPTY
+            }
+            EMPTY if getocc => {
+                chg |= true;
+                OCCUPIED
+            }
+            rest => rest,
+            // _ => continue,
         };
+    };
+
+    for e @ (&(x, y), _) in map {
+        f(e, new.get_mut(&(x, y)).unwrap());
     }
+
+    chg
 }
 
-fn step_part1(map: &Grid) -> Grid {
-    if DONT_PARALLELIZE {
-        let mut new = map.clone();
+fn step_part2_mut(
+    map: &Grid,
+    new: &mut Grid,
+    neighbours: &FMap<(i32, i32), Vec<(i32, i32)>>,
+) -> bool {
+    let mut chg = false;
 
-        step_part1_mut(map, &mut new);
-
-        new
-    } else {
-        map.par_iter()
-            .map(|(&(x, y), &tile)| {
-                let neighbours = NEIGHBOURS_STEP.iter().map(|&(i, j)| (x + i, y + j));
-
-                let occ = neighbours
-                    .filter(|coord| {
-                        map.get(coord)
-                            .map(|&tile| tile == OCCUPIED)
-                            .unwrap_or(false)
-                    })
-                    .count();
-
-                let getocc = occ == 0;
-                let getempty = occ >= 4;
-
-                let newtile = match tile {
-                    OCCUPIED if getempty => EMPTY,
-                    EMPTY if getocc => OCCUPIED,
-                    rest => rest,
-                };
-
-                ((x, y), newtile)
-            })
-            .collect()
-    }
-}
-
-fn step_part2_mut(map: &Grid, new: &mut Grid, neighbours: &FMap<(i32, i32), Vec<(i32, i32)>>) {
-    for (&(x, y), &tile) in map {
+    let mut f = |(&(x, y), &tile), new: &mut u8| {
         let neighbours = neighbours.get(&(x, y)).unwrap().iter();
 
         let occ = neighbours
@@ -128,58 +138,55 @@ fn step_part2_mut(map: &Grid, new: &mut Grid, neighbours: &FMap<(i32, i32), Vec<
         let getocc = occ == 0;
         let getempty = occ >= 5;
 
-        match tile {
-            OCCUPIED if getempty => *new.get_mut(&(x, y)).unwrap() = EMPTY,
-            EMPTY if getocc => *new.get_mut(&(x, y)).unwrap() = OCCUPIED,
-            _ => {}
+        *new = match tile {
+            OCCUPIED if getempty => {
+                chg |= true;
+                EMPTY
+            }
+            EMPTY if getocc => {
+                chg |= true;
+                OCCUPIED
+            }
+            rest => rest,
+            // _ => continue,
         };
+    };
+
+    for e @ (&(x, y), _) in map {
+        f(e, new.get_mut(&(x, y)).unwrap());
     }
+
+    chg
 }
 
-fn step_part2(map: &Grid, neighbours: &FMap<(i32, i32), Vec<(i32, i32)>>) -> Grid {
-    if DONT_PARALLELIZE {
-        let mut new = map.clone();
+fn step_part1(map: &Grid) -> (Grid, bool) {
+    let mut new = map.clone();
 
-        step_part2_mut(map, &mut new, neighbours);
+    let chg = step_part1_mut(map, &mut new);
 
-        new
-    } else {
-        map.par_iter()
-            .map(|(&(x, y), &tile)| {
-                let neighbours = neighbours.get(&(x, y)).unwrap().iter();
+    (new, chg)
+}
 
-                let occ = neighbours
-                    .filter(|coord| {
-                        map.get(coord)
-                            .map(|&tile| tile == OCCUPIED)
-                            .unwrap_or(false)
-                    })
-                    .count();
+fn step_part2(map: &Grid, neighbours: &FMap<(i32, i32), Vec<(i32, i32)>>) -> (Grid, bool) {
+    let mut new = map.clone();
 
-                let getocc = occ == 0;
-                let getempty = occ >= 5;
+    let chg = step_part2_mut(map, &mut new, neighbours);
 
-                let newtile = match tile {
-                    OCCUPIED if getempty => EMPTY,
-                    EMPTY if getocc => OCCUPIED,
-                    rest => rest,
-                };
-
-                ((x, y), newtile)
-            })
-            .collect()
-    }
+    (new, chg)
 }
 
 pub fn part1(input: &str) -> usize {
     let mut grid = parse_grid(input);
+    let mut grid2 = grid.clone();
 
     loop {
-        let new = step_part1(&grid);
+        // let mut (grid2, chgd) = step_part1(&grid);
+        let chgd = step_part1_mut(&grid, &mut grid2);
 
-        let same = izip!(&new, grid).all(|(l, r)| *l.1 == r.1);
+        // let same = izip!(&grid, &grid2).all(|(l, r)| l.1 == r.1);
+        let same = !chgd;
 
-        grid = new;
+        swap(&mut grid, &mut grid2);
 
         if same {
             break;
@@ -191,14 +198,18 @@ pub fn part1(input: &str) -> usize {
 
 pub fn part2(input: &str) -> usize {
     let mut grid = parse_grid(input);
+    let mut grid2 = grid.clone();
+
     let neighbours = pre_neighbours2(&grid);
 
     loop {
-        let new = step_part2(&grid, &neighbours);
+        // let mut (grid2, chgd) = step_part2(&grid, &neighbours);
+        let chgd = step_part2_mut(&grid, &mut grid2, &neighbours);
 
-        let same = izip!(&new, grid).all(|(l, r)| *l.1 == r.1);
+        // let same = izip!(&grid2, &grid).all(|(l, r)| l.1 == r.1);
+        let same = !chgd;
 
-        grid = new;
+        swap(&mut grid, &mut grid2);
 
         if same {
             break;
