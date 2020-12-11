@@ -168,67 +168,6 @@ pub fn part1(input: &str) -> i16 {
     solve(&program).1
 }
 
-fn part2mt(input: &str) -> i16 {
-    let program = parse(input);
-
-    // let start = Instant::now();
-    let finished = AtomicBool::default();
-    let result = AtomicI16::default();
-
-    let _res = crossbeam::scope(|scope| {
-        const NTHREADS: usize = 8;
-
-        let program = &program;
-        let _threads = (0..NTHREADS)
-            .map(|thread_idx| {
-                let finished = &finished;
-                let result = &result;
-
-                scope.spawn(move |_| {
-                    let mut exe = program.clone();
-                    let iter = program
-                        .iter()
-                        .enumerate()
-                        .skip(thread_idx)
-                        .step_by(NTHREADS);
-                    for (i, &(ins, _)) in iter {
-                        // Check for cancellation ocassionally
-                        if i % 16 == 0 && finished.load(atomic::Ordering::Acquire) {
-                            return;
-                        }
-                        // Process as normal
-                        if ins == INS_ACC {
-                            continue;
-                        }
-
-                        exe[i].0 = match ins {
-                            INS_NOP => INS_JMP,
-                            INS_JMP => INS_NOP,
-                            _ => unreachable!(),
-                        };
-
-                        let (pc, acc) = solve(&exe);
-                        if pc as usize == exe.len() {
-                            result.store(acc, atomic::Ordering::Release);
-                            finished.store(true, atomic::Ordering::Release);
-
-                            return;
-                        }
-
-                        exe[i].0 = ins;
-                    }
-                    //not found, hopefully another thread finds
-                })
-            })
-            .collect_vec();
-    });
-
-    // let dur = Instant::now() - start;
-    // println!("{:?}", dur);
-
-    result.load(atomic::Ordering::Acquire)
-}
-
 fn part2onepass(input: &str) -> i16 {
     fn find_swap(program: &[(Ins, i16)]) -> i16 {
         // First run, trace instruction flow till infinite loop
