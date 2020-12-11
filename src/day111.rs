@@ -219,7 +219,7 @@ fn step_part1_mut2(map: ArrayView2<u8>, mut new: ArrayViewMut2<u8>) {
 }
 
 pub fn part12(input: &str) -> usize {
-    let mut grid = parse_grid(input);
+    let grid = parse_grid(input);
     let mut grid = pad(&grid);
     let mut grid2 = grid.clone();
 

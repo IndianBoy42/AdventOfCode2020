@@ -1,4 +1,4 @@
-use aoc20::{day11, day111, utils::read_input};
+use aoc20::{day111, utils::read_input};
 
 fn main() {
     let input = read_input("input11.txt").unwrap();

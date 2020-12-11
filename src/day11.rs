@@ -122,7 +122,10 @@ fn step_part1_mut(map: &Grid, new: &mut Grid) -> bool {
         *new.get_mut(&(x, y)).unwrap() = f(e);
     }
 
-    izip!(map, new).filter(|((_, &old), (_, &mut new))| old != new).count() != 0
+    izip!(map, new)
+        .filter(|((_, &old), (_, &mut new))| old != new)
+        .count()
+        != 0
 }
 
 fn step_part2_mut(map: &Grid, new: &mut Grid, neighbours: &FMap<(i8, i8), Vec<(i8, i8)>>) -> bool {
@@ -164,7 +167,10 @@ fn step_part2_mut(map: &Grid, new: &mut Grid, neighbours: &FMap<(i8, i8), Vec<(i
         *new.get_mut(&(x, y)).unwrap() = f(e);
     }
 
-    izip!(map, new).filter(|((_, &old), (_, &mut new))| old != new).count() != 0
+    izip!(map, new)
+        .filter(|((_, &old), (_, &mut new))| old != new)
+        .count()
+        != 0
 }
 
 fn step_part1(map: &Grid) -> (Grid, bool) {

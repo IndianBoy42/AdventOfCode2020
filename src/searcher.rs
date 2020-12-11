@@ -145,7 +145,8 @@ where
     }
 }
 
-impl<T, VisitSet, Queue, NeighboursFn, SearchIter> Iterator for Searcher<T, Queue, VisitSet, NeighboursFn>
+impl<T, VisitSet, Queue, NeighboursFn, SearchIter> Iterator
+    for Searcher<T, Queue, VisitSet, NeighboursFn>
 where
     T: Hash + Clone + Eq,
     VisitSet: Visited<T>,

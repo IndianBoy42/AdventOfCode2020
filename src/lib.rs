@@ -55,7 +55,7 @@ pub mod day7;
 pub mod day8;
 pub mod day9;
 
+pub mod grid;
+pub mod searcher;
 pub mod u32set;
 pub mod utils;
-pub mod searcher;
-pub mod grid;
