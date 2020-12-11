@@ -107,7 +107,7 @@ pub struct Searcher<T, Queue, VisitSet, NeighboursFn> {
     visited: VisitSet,
     queue: Queue,
     neighbours: NeighboursFn,
-    _dummy_T: PhantomData<T>,
+    _dummyT: PhantomData<T>,
 }
 pub type DFSearcher<T, V, SF> = Searcher<T, V, Vec<T>, SF>;
 pub type DFSearcherInt<SF> = Searcher<usize, BitSet, Vec<usize>, SF>;
@@ -132,7 +132,7 @@ where
             visited: VisitSet::newset_cap(cap),
             queue: Queue::newq_cap(cap),
             neighbours,
-            _dummy_T: PhantomData,
+            _dummyT: PhantomData,
         };
         slf.push(init);
         slf

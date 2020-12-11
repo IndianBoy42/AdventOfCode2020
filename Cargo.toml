@@ -18,6 +18,9 @@ num-bigint = "0.3.1"
 num = "0.3.1"
 num-traits = "0.2.14"
 
+[dependencies.ndarray]
+version = "0.14.0"
+features = ["rayon"]
 
 [dev-dependencies]
 criterion = "0.3.3"
@@ -35,3 +38,4 @@ lto = "thin"
 [[bench]]
 name = "alldays"
 harness = false
+

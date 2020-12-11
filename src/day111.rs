@@ -1,14 +1,20 @@
 use std::mem::swap;
 use std::vec;
 
+use ndarray::Array2;
+
 use crate::grid::Grid2D;
 use crate::utils::*;
 
-// type Grid = Grid2D<u8>;
-type Grid = FMap<(i8, i8), u8>;
+type Grid = Grid2D<u8>;
+// type Grid = FMap<(i32, i32), u8>;
 // wrap Vec<Vec<>> or NDArray for the Grid (should make a library)
  
 fn parse_grid(input: &str) -> Grid {
+    // let it = input.bytes().map(|b| match b {
+    //     b'.' => 0,
+    //     b => b
+    // });
     let it = input.lines().enumerate().flat_map(|(i, line)| {
         line.bytes()
             .enumerate()
@@ -25,7 +31,7 @@ fn parse_grid(input: &str) -> Grid {
 const OCCUPIED: u8 = b'#';
 const EMPTY: u8 = b'L';
 
-const NEIGHBOURS_STEP: [(i8, i8); 8] = [
+const NEIGHBOURS_STEP: [(i32, i32); 8] = [
     (1, 1),
     (0, 1),
     (-1, 1),
@@ -38,8 +44,8 @@ const NEIGHBOURS_STEP: [(i8, i8); 8] = [
 
 fn print_grid(map: &Grid) {}
 
-fn pre_neighbours2(map: &Grid) -> FMap<(i8, i8), Vec<(i8, i8)>> {
-    fn compute(map: &Grid, x: i8, y: i8) -> Vec<(i8, i8)> {
+fn pre_neighbours2(map: &Grid) -> FMap<(i32, i32), Vec<(i32, i32)>> {
+    fn compute(map: &Grid, x: i32, y: i32) -> Vec<(i32, i32)> {
         NEIGHBOURS_STEP
             .iter()
             .filter_map(|&(xs, ys)| {
@@ -56,13 +62,13 @@ fn pre_neighbours2(map: &Grid) -> FMap<(i8, i8), Vec<(i8, i8)>> {
         // .collect()
     }
 
-    map.par_iter()
-        .map(|(&(x, y), _)| ((x, y), compute(map, x, y)))
+    map.iter()
+        .map(|((x, y), _)| ((x, y), compute(map, x, y)))
         .collect()
 }
 
-fn pre_neighbours1(map: &Grid) -> FMap<(i8, i8), Vec<(i8, i8)>> {
-    fn compute(map: &Grid, x: i8, y: i8) -> Vec<(i8, i8)> {
+fn pre_neighbours1(map: &Grid) -> FMap<(i32, i32), Vec<(i32, i32)>> {
+    fn compute(map: &Grid, x: i32, y: i32) -> Vec<(i32, i32)> {
         NEIGHBOURS_STEP
             .iter()
             .filter_map(|&(xs, ys)| {
@@ -79,15 +85,15 @@ fn pre_neighbours1(map: &Grid) -> FMap<(i8, i8), Vec<(i8, i8)>> {
         // .collect()
     }
 
-    map.par_iter()
-        .map(|(&(x, y), _)| ((x, y), compute(map, x, y)))
+    map.iter()
+        .map(|((x, y), _)| ((x, y), compute(map, x, y)))
         .collect()
 }
 
 fn step_part1_mut(map: &Grid, new: &mut Grid) -> bool {
     let mut chg = false;
 
-    let mut f = |(&(x, y), &tile), new: &mut u8| {
+    let mut f = |((x, y), &tile), new: &mut u8| {
         let neighbours = NEIGHBOURS_STEP.iter().map(|&(i, j)| (x + i, y + j));
 
         let occ = neighbours
@@ -112,7 +118,7 @@ fn step_part1_mut(map: &Grid, new: &mut Grid) -> bool {
         };
     };
 
-    for e @ (&(x, y), _) in map {
+    for e @ ((x, y), _) in map.iter() {
         f(e, new.get_mut(&(x, y)).unwrap());
     }
 
@@ -122,11 +128,11 @@ fn step_part1_mut(map: &Grid, new: &mut Grid) -> bool {
 fn step_part2_mut(
     map: &Grid,
     new: &mut Grid,
-    neighbours: &FMap<(i8, i8), Vec<(i8, i8)>>,
+    neighbours: &FMap<(i32, i32), Vec<(i32, i32)>>,
 ) -> bool {
     let mut chg = false;
 
-    let mut f = |(&(x, y), &tile), new: &mut u8| {
+    let mut f = |((x, y), &tile), new: &mut u8| {
         let neighbours = neighbours.get(&(x, y)).unwrap().iter();
 
         let occ = neighbours
@@ -154,7 +160,7 @@ fn step_part2_mut(
         };
     };
 
-    for e @ (&(x, y), _) in map {
+    for e @ ((x, y), _) in map.iter() {
         f(e, new.get_mut(&(x, y)).unwrap());
     }
 
@@ -169,7 +175,7 @@ fn step_part1(map: &Grid) -> (Grid, bool) {
     (new, chg)
 }
 
-fn step_part2(map: &Grid, neighbours: &FMap<(i8, i8), Vec<(i8, i8)>>) -> (Grid, bool) {
+fn step_part2(map: &Grid, neighbours: &FMap<(i32, i32), Vec<(i32, i32)>>) -> (Grid, bool) {
     let mut new = map.clone();
 
     let chg = step_part2_mut(map, &mut new, neighbours);
