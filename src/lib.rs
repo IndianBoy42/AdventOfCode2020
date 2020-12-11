@@ -56,3 +56,4 @@ pub mod day9;
 
 pub mod u32set;
 pub mod utils;
+pub mod searcher;
