@@ -7,12 +7,14 @@ use crate::utils::{fset, FSet, BitSet};
 
 pub trait SearchQueue<T> {
     fn newq() -> Self;
+    fn newq_cap(cap: usize) -> Self;
     fn pushq(&mut self, e: T);
     fn popq(&mut self) -> Option<T>;
 }
 
 pub trait Visited<T> {
     fn newset() -> Self;
+    fn newset_cap(cap: usize) -> Self;
     fn mark(&mut self, e: T) -> bool;
     fn check(&self, e: &T) -> bool;
 }
@@ -23,6 +25,9 @@ where
 {
     fn newq() -> Self {
         Self::new()
+    }
+    fn newq_cap(cap: usize) -> Self {
+        Self::with_capacity(cap)
     }
     fn pushq(&mut self, e: T) {
         self.push(Reverse(e));
@@ -36,6 +41,9 @@ impl<T> SearchQueue<T> for VecDeque<T> {
     fn newq() -> Self {
         Self::new()
     }
+    fn newq_cap(cap: usize) -> Self {
+        Self::with_capacity(cap)
+    }
     fn pushq(&mut self, e: T) {
         self.push_back(e);
     }
@@ -47,6 +55,9 @@ impl<T> SearchQueue<T> for VecDeque<T> {
 impl<T> SearchQueue<T> for Vec<T> {
     fn newq() -> Self {
         Self::new()
+    }
+    fn newq_cap(cap: usize) -> Self {
+        Self::with_capacity(cap)
     }
     fn pushq(&mut self, e: T) {
         self.push(e);
@@ -64,6 +75,9 @@ where
     fn newset() -> Self {
         Self::with_hasher(B::default())
     }
+    fn newset_cap(cap: usize) -> Self {
+        Self::with_capacity_and_hasher(cap, B::default())
+    }
     fn mark(&mut self, e: T) -> bool {
         self.insert(e)
     }
@@ -77,6 +91,9 @@ impl Visited<usize> for BitSet
     fn newset() -> Self {
         Self::new()
     }
+    fn newset_cap(cap: usize) -> Self {
+        Self::with_capacity(cap)
+    }
     fn mark(&mut self, e: usize) -> bool {
         self.insert(e)
     }
@@ -86,30 +103,30 @@ impl Visited<usize> for BitSet
 }
 
 #[derive(Clone, Debug)]
-pub struct Searcher<T, Q, SearchF> {
-    visited: FSet<T>,
-    queue: Q,
-    searcher: SearchF,
+pub struct Searcher<Queue, VisitSet, NeighboursFn> {
+    visited: VisitSet,
+    queue: Queue,
+    neighbours: NeighboursFn,
 }
-pub type DFSearcher<T, SF> = Searcher<T, Vec<T>, SF>;
-pub type BFSearcher<T, SF> = Searcher<T, VecDeque<T>, SF>;
-pub type DijSearcher<T, SF> = Searcher<T, BinaryHeap<Reverse<T>>, SF>;
+pub type DFSearcher<T, V, SF> = Searcher<V, Vec<T>, SF>;
+pub type BFSearcher<T, V, SF> = Searcher<V, VecDeque<T>, SF>;
+pub type DijSearcher<T, V, SF> = Searcher<V, BinaryHeap<Reverse<T>>, SF>;
 
-impl<T, Q, SearchF, SearchIter> Searcher<T, Q, SearchF>
+impl<T, Queue, NeighboursFn, SearchIter> Searcher<Queue, FSet<T>, NeighboursFn>
 where
     T: Hash + Clone + Eq,
-    Q: SearchQueue<T>,
-    SearchF: FnMut(&T) -> SearchIter,
+    Queue: SearchQueue<T>,
+    NeighboursFn: FnMut(&T) -> SearchIter,
     SearchIter: IntoIterator<Item = T>,
 {
-    pub fn new(init: T, searcher: SearchF) -> Searcher<T, Q, SearchF> {
-        Self::with_capacity(0, init, searcher)
+    pub fn new(init: T, neighbours: NeighboursFn) -> Self {
+        Self::with_capacity(0, init, neighbours)
     }
-    pub fn with_capacity(cap: usize, init: T, searcher: SearchF) -> Searcher<T, Q, SearchF> {
+    pub fn with_capacity(cap: usize, init: T, neighbours: NeighboursFn) -> Self {
         let mut s = Searcher {
             visited: fset(cap),
-            queue: Q::newq(),
-            searcher,
+            queue: Queue::newq_cap(cap),
+            neighbours,
         };
         s.push(init);
         s
@@ -122,11 +139,11 @@ where
     }
 }
 
-impl<T, Q, SearchF, SearchIter> Iterator for Searcher<T, Q, SearchF>
+impl<T, Queue, NeighboursFn, SearchIter> Iterator for Searcher<Queue, FSet<T>, NeighboursFn>
 where
     T: Hash + Clone + Eq,
-    Q: SearchQueue<T>,
-    SearchF: FnMut(&T) -> SearchIter,
+    Queue: SearchQueue<T>,
+    NeighboursFn: FnMut(&T) -> SearchIter,
     SearchIter: IntoIterator<Item = T>,
 {
     type Item = T;
@@ -137,7 +154,7 @@ where
             self.visited.insert(elem.clone());
 
             // Find Neighbours
-            for e in (self.searcher)(&elem) {
+            for e in (self.neighbours)(&elem) {
                 if self.visited.contains(&e) {
                     continue;
                 }
@@ -149,11 +166,11 @@ where
     }
 }
 
-// impl<T, Q, SearchF> Iterator for Searcher<T, Q, SearchF>
+// impl<T, Queue, NeighboursFn> Iterator for Searcher<T, Queue, NeighboursFn>
 // where
 //     T: Hash + Clone + Eq,
-//     Q: SearchQueue<T>,
-//     SearchF: FnMut(&mut Self),
+//     Queue: SearchQueue<T>,
+//     NeighboursFn: FnMut(&mut Self),
 // {
 //     type Item = T;
 
@@ -163,7 +180,7 @@ where
 //             self.visited.insert(elem.clone());
 
 //             // Find Neighbours
-//             (self.searcher)(&elem);
+//             (self.neighbours)(&elem);
 
 //             elem
 //         })
