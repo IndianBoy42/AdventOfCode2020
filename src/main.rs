@@ -1,9 +1,9 @@
-use aoc20::{day111, utils::read_input};
+use aoc20::{*};
 
 fn main() {
-    let input = read_input("input11.txt").unwrap();
-    dbg!(day111::part1(&input));
-    dbg!(day111::part2(&input));
+    let input = utils::read_input("input11.txt").unwrap();
+    dbg!(day11::part1(&input));
+    dbg!(day11::part2(&input));
     // assert_eq!(day10::part20(&input), 193434623148032);
     // assert_eq!(day10::part2big(&input), 193434623148032u64.into());
 

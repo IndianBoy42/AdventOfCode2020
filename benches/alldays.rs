@@ -90,6 +90,12 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("Day 11 Part 2", |b| {
         b.iter(|| day11::part2(black_box(&input11)))
     });
+    c.bench_function("Day 111 Part 1", |b| {
+        b.iter(|| day111::part1(black_box(&input11)))
+    });
+    c.bench_function("Day 111 Part 2", |b| {
+        b.iter(|| day111::part2(black_box(&input11)))
+    });
 
     c.bench_function("All Days", |b| {
         b.iter(|| {
