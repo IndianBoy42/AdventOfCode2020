@@ -64,7 +64,7 @@ pub fn part2(input: &str) -> i64 {
         .enumerate()
         .filter_map(|(pos, bus)| bus.parse().map(|bus: i64| (pos as i64, bus)).ok());
 
-    if true {
+    if false {
         let mut buses = buses.sorted_by_key(|&(_, bus)| Reverse(bus));
         debug_assert!(buses
             .clone()
@@ -72,22 +72,42 @@ pub fn part2(input: &str) -> i64 {
             .tuple_combinations()
             .all(|(x, y)| num::integer::gcd(x, y) == 1)); // pairwise coprime, CRT applies
 
-        let (pos, bus) = buses.next().unwrap();
+        if true {
+            // let (prod, ans) = (1, 0);
+            let (pos, bus) = buses.next().unwrap();
+            let prod = bus;
+            let ans = -pos % prod;
 
-        // let mut ans = bus - pos;
-        let mut prod = bus;
-        let mut ans = -pos % prod;
+            let (prod, ans) = buses.fold((prod, ans), |(prod, ans), (pos, bus)| {
+                let ans = (ans..)
+                    .step_by(prod as usize)
+                    .find(|&t| (t + pos) % bus == 0)
+                    .unwrap();
 
-        for (pos, bus) in buses {
-            ans = (ans..)
-                .step_by(prod as usize)
-                .find(|&t| (t + pos) % bus == 0)
-                .unwrap();
-            prod = prod * bus; // If not pairwise coprime then use num::integer::lcm here?
-                               // ans = ans % prod;
+                let prod = prod * bus; // If not pairwise coprime then use num::integer::lcm here?
+                (prod, ans)
+            });
+
+            ans
+        } else {
+            let f = |(pos2, bus2): (i64, i64), (pos, bus)| {
+                let ans = (((-pos2) % bus2)..)
+                    .step_by(bus2 as usize)
+                    .find(|&t| (t + pos) % bus == 0)
+                    .unwrap();
+
+                let prod = bus2 * bus; // If not pairwise coprime then use num::integer::lcm here?
+
+                (-ans, prod)
+            };
+            let init = (0, 1);
+
+            // let (ans, prod) = buses.collect_vec().into_par_iter().reduce(|| init, f);
+            let (ans, prod) = buses.tree_fold1(f).unwrap();
+            // let (ans, prod) = buses.fold(init, f);
+
+            -ans
         }
-
-        ans
     } else {
         let (poses, buses): (Vec<i64>, Vec<i64>) = buses.map(|(pos, bus)| (bus - pos, bus)).unzip();
         debug_assert!(buses
