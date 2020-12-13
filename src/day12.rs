@@ -11,13 +11,11 @@ fn step((x, y): &mut (i32, i32), stepdir: u8, stepmag: i32) {
 }
 fn rot(dir: u8, deg: i32, rotdir: u8) -> u8 {
     const DIRS: [u8; 4] = [b'N', b'W', b'S', b'E'];
-    let idx = DIRS.iter().copied().position(|x| x == dir).unwrap() as i32;
-    let rotsteps = deg / 90;
-    match rotdir {
-        b'L' => DIRS[(idx + rotsteps) as usize % 4],
-        b'R' => DIRS[(idx + 4 - rotsteps) as usize % 4],
-        _ => unreachable!(),
-    }
+    let idx = DIRS.iter().position(|&x| x == dir).unwrap() as i32;
+    let deg = deg / 90;
+    let deg = if rotdir == b'R' { -deg } else { deg };
+    let deg = (4 + deg) % 4;
+    DIRS[(idx + deg) as usize % 4]
 }
 
 pub fn part1(input: &str) -> i32 {
