@@ -109,16 +109,16 @@ pub fn part2(input: &str) -> i64 {
             -ans
         }
     } else {
-        let (poses, buses): (Vec<i64>, Vec<i64>) = buses.map(|(pos, bus)| (bus - pos, bus)).unzip();
+        let (poss, buses): (Vec<i64>, Vec<i64>) = buses.map(|(pos, bus)| (bus - pos, bus)).unzip();
         debug_assert!(buses
             .iter()
             .copied()
             .tuple_combinations()
             .all(|(x, y)| num::integer::gcd(x, y) == 1)); // pairwise coprime, CRT applies
 
-        let t = chinese_remainder(&poses, &buses).unwrap();
+        let t = chinese_remainder(&poss, &buses).unwrap();
 
-        for (pos, bus) in izip!(poses, buses) {
+        for (pos, bus) in izip!(poss, buses) {
             debug_assert_eq!((t - pos) % bus, 0, "p{}, b{}", pos, bus)
         }
         t
