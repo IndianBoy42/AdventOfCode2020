@@ -2,10 +2,10 @@ use std::mem::swap;
 
 use crate::utils::*;
 
-type Coord = (i32, i32, i32);
+type Coord = (i16, i16, i16);
 
 pub fn part1(input: &str) -> usize {
-    let mut map: FSet<(i32, i32, i32)> = input
+    let mut map: FSet<(i16, i16, i16)> = input
         .lines()
         .enumerate()
         .flat_map(|(i, line)| {
@@ -47,7 +47,7 @@ pub fn part1(input: &str) -> usize {
 }
 
 pub fn part2(input: &str) -> usize {
-    let mut map: FSet<(i32, i32, i32, i32)> = input
+    let mut map: FSet<(i16, i16, i16, i16)> = input
         .lines()
         .enumerate()
         .flat_map(|(i, line)| {
@@ -58,7 +58,9 @@ pub fn part2(input: &str) -> usize {
         })
         .collect();
 
-    let neighbours = iproduct!(-1..=1, -1..=1, -1..=1, -1..=1).collect_vec();
+    let neighbours = iproduct!(-1..=1, -1..=1, -1..=1, -1..=1)
+        .filter(|&(x, y, z, w)| x != 0 || y != 0 || z != 0 || w != 0)
+        .collect_vec();
 
     let it_neighbours = |(xi, yi, zi, wi)| {
         neighbours
@@ -66,21 +68,29 @@ pub fn part2(input: &str) -> usize {
             .map(move |&(dx, dy, dz, dw)| (xi + dx, yi + dy, zi + dz, wi + dw))
     };
 
-    let mut newmap = fset(0);
+    let mut coordset = fset(20001);
+    let mut newmap = fset(20001);
+    // let mut countmap = fmap(20001);
+    map.reserve(20001);
     for _ in 0..6 {
         newmap.clear();
-        newmap.reserve(map.len() * 10);
+        // newmap.reserve(map.len() * 10);
 
         let coords = map.iter().flat_map(|&i| it_neighbours(i));
-        let coords = coords.collect::<FSet<_>>();
+        coordset.clear();
+        coordset.extend(coords);
+        let coords = &coordset;
+        // let coords = coords.collect::<FSet<_>>();
 
-        for i in coords {
-            // if newmap.contains(&i) {continue;}
-            let active_neighbours = it_neighbours(i).filter(|n| map.contains(n)).take(5).count();
-            let curr_active = map.contains(&i);
-            let stay_active = || curr_active && (active_neighbours==3 || active_neighbours==4);
-            let get_active = || !curr_active && active_neighbours == 3;
-            if stay_active() || get_active() {
+        for &i in &map {
+            let active_neighbours = it_neighbours(i).filter(|n| map.contains(n)).take(4).count();
+            if active_neighbours == 2 || active_neighbours == 3 {
+                newmap.insert(i);
+            }
+        }
+        for &i in coords {
+            let active_neighbours = it_neighbours(i).filter(|n| map.contains(n)).take(4).count();
+            if active_neighbours==3 {
                 newmap.insert(i);
             }
         }
