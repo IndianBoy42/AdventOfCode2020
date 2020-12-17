@@ -113,6 +113,38 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| day13::part2(black_box(&input13)))
     });
 
+    let input14 = utils::read_input("input14.txt").unwrap();
+    c.bench_function("Day 14 Part 1", |b| {
+        b.iter(|| day14::part1(black_box(&input14)))
+    });
+    c.bench_function("Day 14 Part 2", |b| {
+        b.iter(|| day14::part2(black_box(&input14)))
+    });
+    
+    let input15 = utils::read_input("input15.txt").unwrap();
+    c.bench_function("Day 15 Part 1", |b| {
+        b.iter(|| day15::part1(black_box(&input15)))
+    });
+    c.bench_function("Day 15 Part 2", |b| {
+        b.iter(|| day15::part2(black_box(&input15)))
+    });
+    
+    let input16 = utils::read_input("input16.txt").unwrap();
+    c.bench_function("Day 16 Part 1", |b| {
+        b.iter(|| day16::part1(black_box(&input16)))
+    });
+    c.bench_function("Day 16 Part 2", |b| {
+        b.iter(|| day16::part2(black_box(&input16)))
+    });
+    
+    let input17 = utils::read_input("input17.txt").unwrap();
+    c.bench_function("Day 17 Part 1", |b| {
+        b.iter(|| day17::part1(black_box(&input17)))
+    });
+    c.bench_function("Day 17 Part 2", |b| {
+        b.iter(|| day17::part2(black_box(&input17)))
+    });
+
     c.bench_function("All Days", |b| {
         b.iter(|| {
             day1::part1(black_box(&input1));

@@ -150,5 +150,5 @@ pub fn part2(input: &str) -> i64 {
 fn test() {
     let input = read_input("input16.txt").unwrap();
     assert_eq!(part1(&input), 26869);
-    assert_eq!(part2(&input), 0);
+    assert_eq!(part2(&input), 855275529001);
 }
