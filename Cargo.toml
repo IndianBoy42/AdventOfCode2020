@@ -30,13 +30,11 @@ criterion = "0.3.3"
 panic = "abort"
 codegen-units = 1
 lto = "fat"
-rustflags = ["-C", "target-cpu=native"]
 
-[profile.bench]
+# [profile.bench]
 # panic = "abort"
 # codegen-units = 1
 # lto = "thin"
-rustflags = ["-C", "target-cpu=native"]
 
 [[bench]]
 name = "alldays"

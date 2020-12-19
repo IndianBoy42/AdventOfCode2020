@@ -62,7 +62,7 @@ fn tokens(input: &str) -> impl Iterator<Item = &str> {
 pub fn part1(input: &str) -> i64 {
     input
         .lines()
-        .map(|line| (tokens(line).collect_vec()))
+        .map(|line| tokens(line).collect_vec())
         // .take(1)
         .map(|line| eval(&mut line.into_iter()))
         .sum()
@@ -161,5 +161,5 @@ fn test() {
         part2("((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2"),
         23340
     );
-    assert_eq!(part2(&input), 0);
+    assert_eq!(part2(&input), 290726428573651);
 }
