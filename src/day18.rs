@@ -10,14 +10,9 @@ fn num(input: &str) -> i64 {
     input.trim().parse().unwrap()
 }
 
-macro_rules! dbg {
-    ($t:expr) => {
-        $t
-    };
-}
 
 fn evalone<'a>(tokens: &mut impl Iterator<Item = &'a str>) -> i64 {
-    match dbg!(tokens.next().unwrap()) {
+    match tokens.next().unwrap() {
         "+" => unreachable!(),
         "*" => unreachable!(),
         "(" => {
@@ -35,29 +30,25 @@ fn evalone<'a>(tokens: &mut impl Iterator<Item = &'a str>) -> i64 {
 fn eval<'a>(tokens: &mut impl Iterator<Item = &'a str>) -> i64 {
     let mut acc = 0;
     while let Some(token) = tokens.next() {
-        match dbg!(token) {
+        match token {
             "+" => {
-                acc += dbg!(evalone(tokens));
-                dbg!(acc);
+                acc += evalone(tokens);
             }
             "*" => {
-                acc *= dbg!(evalone(tokens));
-                dbg!(acc);
+                acc *= evalone(tokens);
             }
             "(" => {
                 acc = eval(tokens);
-                dbg!(acc);
             }
             ")" => break,
             token => {
                 let num = num(token);
                 acc = num;
-                dbg!(acc);
             }
         }
     }
 
-    dbg!(acc)
+    acc
 }
 
 fn tokens(input: &str) -> impl Iterator<Item = &str> {
@@ -71,14 +62,14 @@ fn tokens(input: &str) -> impl Iterator<Item = &str> {
 pub fn part1(input: &str) -> i64 {
     input
         .lines()
-        .map(|line| dbg!(tokens(line).collect_vec()))
+        .map(|line| (tokens(line).collect_vec()))
         // .take(1)
         .map(|line| eval(&mut line.into_iter()))
         .sum()
 }
 
 fn evalone2<'a>(tokens: &mut Peekable<impl Iterator<Item = &'a str>>) -> i64 {
-    match dbg!(tokens.next().unwrap()) {
+    match tokens.next().unwrap() {
         "+" => unreachable!(),
         "*" => unreachable!(),
         "(" => {
@@ -96,62 +87,55 @@ fn eval_star<'a>(tokens: &mut Peekable<impl Iterator<Item = &'a str>>) -> i64 {
     let mut acc = 0;
     // let mut tokens = tokens.peeking_take_while(|&token| token != "*");
     while let Some(&token) = tokens.peek() {
-        match dbg!(token) {
+        match token {
             "+" => {
                 tokens.next();
-                acc += dbg!(evalone2(tokens));
-                dbg!(acc);
+                acc += evalone2(tokens);
             }
             "*" => break,
             "(" => {
                 tokens.next();
                 acc = eval2(tokens);
-                dbg!(acc);
             }
             ")" => break,
             token => {
                 tokens.next();
                 let num = num(token);
                 acc = num;
-                dbg!(acc);
             }
         }
     }
 
-    dbg!(acc)
+    acc
 }
 fn eval2<'a>(tokens: &mut Peekable<impl Iterator<Item = &'a str>>) -> i64 {
     let mut acc = 0;
     while let Some(token) = tokens.next() {
-        match dbg!(token) {
+        match token {
             "+" => {
-                acc += dbg!(evalone2(tokens));
-                dbg!(acc);
+                acc += evalone2(tokens);
             }
             "*" => {
-                acc *= dbg!(eval_star(tokens));
-                dbg!(acc);
+                acc *= eval_star(tokens);
             }
             "(" => {
                 acc = eval2(tokens);
-                dbg!(acc);
             }
             ")" => break,
             token => {
                 let num = num(token);
                 acc = num;
-                dbg!(acc);
             }
         }
     }
 
-    dbg!(acc)
+    acc
 }
 
 pub fn part2(input: &str) -> i64 {
     input
         .lines()
-        .map(|line| dbg!(tokens(line).collect_vec()))
+        .map(|line| (tokens(line).collect_vec()))
         // .take(1)
         .map(|line| eval2(&mut line.into_iter().peekable()))
         .sum()

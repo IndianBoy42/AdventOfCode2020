@@ -145,6 +145,22 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| day17::part2(black_box(&input17)))
     });
 
+    let input18 = utils::read_input("input18.txt").unwrap();
+    c.bench_function("Day 18 Part 1", |b| {
+        b.iter(|| day18::part1(black_box(&input18)))
+    });
+    c.bench_function("Day 18 Part 2", |b| {
+        b.iter(|| day18::part2(black_box(&input18)))
+    });
+
+    let input19 = utils::read_input("input19.txt").unwrap();
+    c.bench_function("Day 19 Part 1", |b| {
+        b.iter(|| day19::part1(black_box(&input19)))
+    });
+    c.bench_function("Day 19 Part 2", |b| {
+        b.iter(|| day19::part2(black_box(&input19)))
+    });
+
     c.bench_function("All Days", |b| {
         b.iter(|| {
             day1::part1(black_box(&input1));

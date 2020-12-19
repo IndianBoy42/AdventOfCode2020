@@ -3,8 +3,10 @@ use std::borrow::Cow;
 use crate::utils::*;
 use regex::Regex;
 
+#[derive(Debug, Clone)]
 enum Rule<'a> {
     Compound(Vec<Vec<i32>>),
+    Built(String),
     Basic(&'a str),
 }
 impl Rule<'_> {
@@ -29,36 +31,47 @@ impl Rule<'_> {
 
 type Dict<'a> = FMap<i32, Rule<'a>>;
 
-fn expand_regex<'a, 'b>(i: i32, dict: &'a Dict<'b>) -> Option<Cow<'b, str>> {
-    fn inner<'a, 'b>(i: i32, dict: &'a Dict<'b>, depth: i32) -> Option<Cow<'b, str>> {
+fn expand_regex<'a, 'b>(i: i32, dict: &'a mut Dict<'b>) -> String {
+    fn inner<'a, 'b>(i: i32, dict: &'a mut Dict<'b>, buf: &mut String, depth: i32) {
         if depth > 10 {
-            None?
+            return;
         }
-        let rule = dict.get(&i)?;
-        let rule: Cow<str> = match rule {
+        let rule = dict.get(&i).unwrap();
+        match rule {
             Rule::Compound(rules) => {
-                let rule = rules
-                    .iter()
-                    .map(|rule| {
-                        rule.iter()
-                            .filter_map(|&subrule| {
-                                inner(subrule, dict, if subrule == i { depth + 1 } else { 0 })
-                            })
-                            .join("")
-                    })
-                    .join("|");
-                Cow::Owned(format!("({})", rule))
+                let rules = rules.clone();
+                let start = buf.len();
+                buf.push('(');
+                {
+                    rules[0].iter().for_each(|&subrule| {
+                        inner(subrule, dict, buf, if subrule == i { depth + 1 } else { 0 })
+                    });
+
+                    rules[1..].iter().for_each(|rule: &Vec<i32>| {
+                        buf.push('|');
+                        rule.iter().for_each(|&subrule| {
+                            inner(subrule, dict, buf, if subrule == i { depth + 1 } else { 0 })
+                        })
+                    });
+                }
+                buf.push(')');
+                *dict.get_mut(&i).unwrap() = Rule::Built(buf[start..].to_owned());
             }
-            Rule::Basic(rule) => Cow::Borrowed(rule),
+            Rule::Built(rule) => buf.push_str(rule),
+            Rule::Basic(rule) => buf.push_str(rule),
         };
-        Some(rule)
     }
-    inner(i, dict, 0)
+
+    let mut buf = String::with_capacity(1000);
+    buf.push('^');
+    inner(i, dict, &mut buf, 0);
+    buf.push('$');
+    buf
 }
 
 pub fn part1(input: &str) -> usize {
     let (rules, lines) = input.split_once("\n\n").unwrap();
-    let rules: Dict = rules
+    let mut rules: Dict = rules
         .lines()
         .map(|line| line.split_once(':').unwrap())
         .map(|(ruleno, specs)| {
@@ -67,8 +80,7 @@ pub fn part1(input: &str) -> usize {
         })
         .collect();
 
-    let rule0 = dbg!(expand_regex(0, &rules)).unwrap();
-    let rule0 = format!("^{}$", rule0);
+    let rule0 = expand_regex(0, &mut rules);
     let rule0 = Regex::new(&rule0).unwrap();
 
     lines.lines().filter(|line| rule0.is_match(line)).count()
@@ -76,7 +88,7 @@ pub fn part1(input: &str) -> usize {
 
 pub fn part2(input: &str) -> usize {
     let (rules, lines) = input.split_once("\n\n").unwrap();
-    let rules: Dict = rules
+    let mut rules: Dict = rules
         .lines()
         .map(|line| line.split_once(':').unwrap())
         .map(|(ruleno, specs)| {
@@ -92,10 +104,9 @@ pub fn part2(input: &str) -> usize {
         })
         .collect();
 
-    let rule0 = dbg!(expand_regex(0, &rules)).unwrap();
-    let rule0 = format!("^{}$", rule0);
+    let rule0 = expand_regex(0, &mut rules);
+    
     let rule0 = Regex::new(&rule0).unwrap();
-
     lines.lines().filter(|line| rule0.is_match(line)).count()
 }
 
@@ -104,6 +115,6 @@ fn test() {
     // let input = read_input("test.txt").unwrap();
     let input = read_input("input19.txt").unwrap();
     assert_eq!(part1(&input), 124);
-    // dbg!(part1(&input));
-    assert_eq!(part2(&input), 0);
+    // (part1(&input));
+    assert_eq!(part2(&input), 228);
 }
