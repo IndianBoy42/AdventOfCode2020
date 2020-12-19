@@ -34,36 +34,76 @@ type Dict<'a> = FMap<i32, Rule<'a>>;
 
 fn expand_regex<'a, 'b>(i: i32, dict: &'a mut Dict<'b>) -> String {
     fn inner<'a, 'b>(i: i32, dict: &'a mut Dict<'b>, buf: &mut String, depth: i32) {
-        if depth > 10 {
+        if depth == 4 {
             return;
         }
         let rule = dict.get(&i).unwrap();
         match rule {
             Rule::Compound(rules) => {
                 let rules = rules.clone();
-                let start = buf.len();
-                buf.push('(');
+                if rules.len() == 2 && rules[0] == rules[1][..(rules[1].len() - 1)]
+                // Find the recurse at the end case -> (inner+)
                 {
-                    rules[0].iter().for_each(|&subrule| {
-                        inner(subrule, dict, buf, if subrule == i { depth + 1 } else { 0 })
-                    });
-
-                    rules[1..].iter().for_each(|rule: &Vec<i32>| {
-                        buf.push('|');
-                        rule.iter().for_each(|&subrule| {
+                    let start = buf.len();
+                    buf.push('(');
+                    {
+                        rules[0].iter().for_each(|&subrule| {
                             inner(subrule, dict, buf, if subrule == i { depth + 1 } else { 0 })
-                        })
-                    });
+                        });
+                    }
+                    buf.push_str(")+");
+                } else if rules.len() == 2
+                    && rules[0].len() == 2
+                    && rules[1].len() == 3
+                    && rules[0][0] == rules[1][0]
+                    && rules[0][1] == rules[1][2]
+                    && rules[1][1] == i
+                    && rules[0][0] != i
+                    && rules[0][1] != i
+                // Find the nested in the middle case
+                {
+                    let mut buf0 = String::with_capacity(128);
+                    let mut buf1 = String::with_capacity(128);
+                    inner(rules[0][0], dict, &mut buf0, 0);
+                    inner(rules[0][1], dict, &mut buf1, 0);
+
+                    buf.push('(');
+                    for _ in 0..4 {
+                        buf.push_str(&buf0);
+                        buf.push('(');
+                    }
+                    for _ in 0..4 {
+                        buf.push_str(")?");
+                        buf.push_str(&buf1);
+                    }
+                    buf.push(')');
+                } else {
+                    let start = buf.len();
+                    buf.push('(');
+                    {
+                        rules[0].iter().for_each(|&subrule| {
+                            inner(subrule, dict, buf, if subrule == i { depth + 1 } else { 0 })
+                        });
+
+                        rules[1..].iter().for_each(|rule: &Vec<i32>| {
+                            buf.push('|');
+                            rule.iter().for_each(|&subrule| {
+                                inner(subrule, dict, buf, if subrule == i { depth + 1 } else { 0 })
+                            })
+                        });
+                    }
+                    buf.push(')');
+                    if buf[start..].len() > 64 {
+                        *dict.get_mut(&i).unwrap() = Rule::Built(buf[start..].to_owned());
+                    }
                 }
-                buf.push(')');
-                if buf[start..].len() > 64 { *dict.get_mut(&i).unwrap() = Rule::Built(buf[start..].to_owned()); }
             }
             Rule::Built(rule) => buf.push_str(rule),
             Rule::Basic(rule) => buf.push_str(rule),
         };
     }
 
-    let mut buf = String::with_capacity(1000);
+    let mut buf = String::with_capacity(1024);
     buf.push('^');
     inner(i, dict, &mut buf, 0);
     buf.push('$');
@@ -107,8 +147,8 @@ pub fn part2(input: &str) -> usize {
 
     let rule0 = expand_regex(0, &mut rules);
     let rule0 = Regex::new(&rule0).unwrap();
-    
-    // black_box(rule0);  
+
+    // black_box(rule0);
     // 0
     lines.lines().filter(|line| rule0.is_match(line)).count()
 }
