@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::hint::black_box;
 
 use crate::utils::*;
 use regex::Regex;
@@ -55,7 +56,7 @@ fn expand_regex<'a, 'b>(i: i32, dict: &'a mut Dict<'b>) -> String {
                     });
                 }
                 buf.push(')');
-                *dict.get_mut(&i).unwrap() = Rule::Built(buf[start..].to_owned());
+                if buf[start..].len() > 64 { *dict.get_mut(&i).unwrap() = Rule::Built(buf[start..].to_owned()); }
             }
             Rule::Built(rule) => buf.push_str(rule),
             Rule::Basic(rule) => buf.push_str(rule),
@@ -105,8 +106,10 @@ pub fn part2(input: &str) -> usize {
         .collect();
 
     let rule0 = expand_regex(0, &mut rules);
-    
     let rule0 = Regex::new(&rule0).unwrap();
+    
+    // black_box(rule0);  
+    // 0
     lines.lines().filter(|line| rule0.is_match(line)).count()
 }
 
