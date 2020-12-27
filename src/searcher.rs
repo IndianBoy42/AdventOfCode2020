@@ -1,3 +1,4 @@
+use std::iter::once;
 use std::marker::PhantomData;
 use std::{
     cmp::Reverse, collections::BinaryHeap, collections::HashSet, collections::VecDeque,
@@ -107,35 +108,51 @@ pub struct Searcher<T, Queue, VisitSet, NeighboursFn> {
     visited: VisitSet,
     queue: Queue,
     neighbours: NeighboursFn,
-    _dummyT: PhantomData<T>,
+    _dummy_t: PhantomData<T>,
 }
-pub type DFSearcher<T, V, SF> = Searcher<T, V, Vec<T>, SF>;
-pub type DFSearcherInt<SF> = Searcher<usize, BitSet, Vec<usize>, SF>;
-pub type BFSearcher<T, V, SF> = Searcher<T, V, VecDeque<T>, SF>;
-pub type BFSearcherInt<SF> = Searcher<usize, BitSet, VecDeque<usize>, SF>;
-pub type DijSearcher<T, V, SF> = Searcher<T, V, BinaryHeap<Reverse<T>>, SF>;
-pub type DijSearcherInt<SF> = Searcher<usize, BitSet, BinaryHeap<Reverse<usize>>, SF>;
+pub type DFSearcher<T, V, SF> = Searcher<T, Vec<T>, V, SF>;
+pub type DFSearcherInt<SF> = Searcher<usize, Vec<usize>, BitSet, SF>;
+pub type BFSearcher<T, V, SF> = Searcher<T, VecDeque<T>, V, SF>;
+pub type BFSearcherInt<SF> = Searcher<usize, VecDeque<usize>, BitSet, SF>;
+pub type DijSearcher<T, V, SF> = Searcher<T, BinaryHeap<Reverse<T>>, V, SF>;
+pub type DijSearcherInt<SF> = Searcher<usize, BinaryHeap<Reverse<usize>>, BitSet, SF>;
 
-impl<T, VisitSet, Queue, NeighboursFn, SearchIter> Searcher<T, Queue, VisitSet, NeighboursFn>
+impl<T, Queue, VisitSet, NeighboursFn /* , SearchIter */> Searcher<T, Queue, VisitSet, NeighboursFn>
 where
     T: Hash + Clone + Eq,
     VisitSet: Visited<T>,
     Queue: SearchQueue<T>,
-    NeighboursFn: FnMut(&T) -> SearchIter,
-    SearchIter: IntoIterator<Item = T>,
+    // NeighboursFn: FnMut(&T) -> SearchIter,
+    // SearchIter: IntoIterator<Item = T>,
 {
     pub fn new(init: T, neighbours: NeighboursFn) -> Self {
-        Self::with_capacity(0, init, neighbours)
+        Self::with_capacity(1, init, neighbours)
     }
-    pub fn with_capacity(cap: usize, init: T, neighbours: NeighboursFn) -> Self {
+    pub fn new_all<I: IntoIterator<Item = T>>(init: I, neighbours: NeighboursFn) -> Self {
+        let init = init.into_iter();
+        let (l, u) = init.size_hint();
+        let size = u.unwrap_or(l);
+
+        Self::with_capacity_all(size, init, neighbours)
+    }
+    pub fn with_capacity_all<I: IntoIterator<Item = T>>(
+        cap: usize,
+        init: I,
+        neighbours: NeighboursFn,
+    ) -> Self {
         let mut slf = Searcher {
             visited: VisitSet::newset_cap(cap),
             queue: Queue::newq_cap(cap),
             neighbours,
-            _dummyT: PhantomData,
+            _dummy_t: PhantomData,
         };
-        slf.push(init);
+        for e in init {
+            slf.push(e)
+        }
         slf
+    }
+    pub fn with_capacity(cap: usize, init: T, neighbours: NeighboursFn) -> Self {
+        Self::with_capacity_all(cap, once(init), neighbours)
     }
 
     pub fn push(&mut self, e: T) {
@@ -163,9 +180,7 @@ where
 
             // Find Neighbours
             for e in (self.neighbours)(&elem) {
-                if self.visited.check(&e) {
-                    self.push(e);
-                }
+                self.push(e);
             }
 
             elem
