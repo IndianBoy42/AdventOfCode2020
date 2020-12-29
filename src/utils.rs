@@ -79,3 +79,7 @@ pub fn minmax_clone<T: Clone + PartialOrd>(it: impl IntoIterator<Item = T>) -> O
         itertools::MinMaxResult::MinMax(a, b) => Some((a, b)),
     }
 }
+
+pub fn mov<T>(x: T) -> T {
+    x
+}
