@@ -62,15 +62,14 @@ fn game(input: &str, max: u32, moves: usize) -> Vec<u32> {
                 .filter(|&j| j != c)
                 .next()
         };
-        let search = (min..curr).rev();
         let dest = searchin(min..curr).or_else(|| searchin(curr..max)).unwrap();
 
         // dest -> (a -> b -> c) -> next(dest)
+        // nodes[c as usize] = std::mem::replace(&mut nodes[dest as usize], a)
         unsafe {
             *nodes.get_unchecked_mut(c as usize) =
                 std::mem::replace(nodes.get_unchecked_mut(dest as usize), a);
         }
-        // nodes[c as usize] = std::mem::replace(&mut nodes[dest as usize], a)
 
         // new curr
         // curr = nodes[curr as usize];
@@ -95,43 +94,6 @@ pub fn part1(input: &str) -> u32 {
     }
 
     out
-}
-pub fn part1_deq(input: &str) -> String {
-    let mut cups: VecDeque<_> = input.bytes().map(|x| x as usize).collect();
-    let (&min, &max) = minmax(&cups).unwrap();
-
-    // let out = |cups: &VecDeque<_>| cups.into_iter().map(|&x| x as u8 as char).join("");
-
-    cups.rotate_left(1);
-    for _ in 0..100 {
-        let curr = *cups.back().unwrap();
-        let (a, b, c) = (
-            cups.pop_front().unwrap(),
-            cups.pop_front().unwrap(),
-            cups.pop_front().unwrap(),
-        );
-
-        let search = (min..curr).rev().chain((curr..=max).rev());
-        let destination = mov(search)
-            .find_map(|i| cups.iter().position(|&cup| cup == i))
-            .unwrap();
-        // dbg!(out( &cups ), destination, cups[destination] as u8 as char);
-        cups.rotate_left(destination + 1);
-        cups.push_front(c);
-        cups.push_front(b);
-        cups.push_front(a);
-        cups.rotate_right(destination);
-
-        // dbg!(out(&cups));
-    }
-
-    cups.iter()
-        .cycle()
-        .skip_while(|&&cup| cup as u8 != b'1')
-        .skip(1)
-        .take(cups.len() - 1)
-        .map(|&x| x as u8 as char)
-        .join("")
 }
 
 pub fn part2(input: &str) -> u64 {
