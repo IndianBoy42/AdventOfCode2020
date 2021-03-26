@@ -30,37 +30,54 @@ pub fn part1(input: &str) -> u32 {
 }
 
 fn play(mut p1: VecDeque<u32>, mut p2: VecDeque<u32>) -> (bool, VecDeque<u32>) {
-    let mut set = fset(0);
+    fn play_util(
+        p1: &mut VecDeque<u32>,
+        p2: &mut VecDeque<u32>,
+        previously_played: &mut FMap<(VecDeque<u32>, VecDeque<u32>), bool>,
+    ) -> bool {
+        // if let Some(&b) = previously_played.get(&(p1.clone(), p2.clone())) {
+        //     return b;
+        // }
+        let mut set = fset(0);
 
-    while !p1.is_empty() && !p2.is_empty() {
-        if !set.insert((p1.clone(), p2.clone())) {
-            return (true, p1);
+        while !p1.is_empty() && !p2.is_empty() {
+            if !set.insert((p1.clone(), p2.clone())) {
+                return true;
+            }
+
+            let c1 = p1.pop_front().unwrap();
+            let c2 = p2.pop_front().unwrap();
+            // let (c1, c2) = p1.pop_front().zip(p2.pop_front()).unwrap();
+
+            let p1win = if p1.len() >= (c1 as usize) && p2.len() >= (c2 as usize) {
+                let mut p1 = p1.iter().copied().take(c1 as usize).collect();
+                let mut p2 = p2.iter().copied().take(c2 as usize).collect();
+                play_util(&mut p1, &mut p2, previously_played)
+            } else {
+                c1 > c2
+            };
+
+            if p1win {
+                p1.push_back(c1);
+                p1.push_back(c2);
+            } else {
+                p2.push_back(c2);
+                p2.push_back(c1);
+            }
         }
-
-        let (c1, c2) = p1.pop_front().zip(p2.pop_front()).unwrap();
-
-        let p1win = if p1.len() >= (c1 as usize) && p2.len() >= (c2 as usize) {
-            play(
-                p1.iter().copied().take(c1 as usize).collect(),
-                p2.iter().copied().take(c2 as usize).collect(),
-            )
-            .0
-        } else {
-            c1 > c2
-        };
-
-        if p1win {
-            p1.push_back(c1);
-            p1.push_back(c2);
-        } else {
-            p2.push_back(c2);
-            p2.push_back(c1);
-        }
+        let ret = !p1.is_empty();
+        // set.into_iter().for_each(|p| {
+        //     previously_played.insert(p, ret);
+        // });
+        return ret;
     }
-    if p1.is_empty() {
-        (false, p2)
-    } else {
+
+    let mut previously_played = fmap(0);
+
+    if play_util(&mut p1, &mut p2, &mut previously_played) {
         (true, p1)
+    } else {
+        (false, p2)
     }
 }
 
