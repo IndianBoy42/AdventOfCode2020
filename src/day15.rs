@@ -54,8 +54,8 @@ fn solve(input: &str, n: usize) -> usize {
             // match map.entry(last) {
             Entry::Occupied(mut occ) => {
                 let prev = occ.get_mut();
-                last = i - *prev;
-                *prev = i;
+                let prev = std::mem::replace(prev, i);
+                last = i - prev;
             }
             Entry::Vacant(vac) => {
                 vac.insert(i);
