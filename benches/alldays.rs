@@ -90,12 +90,6 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("Day 11 Part 2", |b| {
         b.iter(|| day11::part2(black_box(&input11)))
     });
-    // c.bench_function("Day 111 Part 1", |b| {
-    //     b.iter(|| day111::part1(black_box(&input11)))
-    // });
-    // c.bench_function("Day 111 Part 2", |b| {
-    //     b.iter(|| day111::part2(black_box(&input11)))
-    // });
 
     let input12 = utils::read_input("input12.txt").unwrap();
     c.bench_function("Day 12 Part 1", |b| {
@@ -158,7 +152,59 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| day19::part2(black_box(&input19)))
     });
 
-    c.bench_function("All Days", |b| {
+    // let input20 = utils::read_input("input20.txt").unwrap();
+    // c.bench_function("Day 20 Part 1", |b| {
+    //     b.iter(|| day20::part1(black_box(&input20)))
+    // });
+    // c.bench_function("Day 20 Part 2", |b| {
+    //     b.iter(|| day20::part2(black_box(&input20)))
+    // });
+
+    let input21 = utils::read_input("input21.txt").unwrap();
+    c.bench_function("Day 21 Part 1", |b| {
+        b.iter(|| day21::part1(black_box(&input21)))
+    });
+    c.bench_function("Day 21 Part 2", |b| {
+        b.iter(|| day21::part2(black_box(&input21)))
+    });
+
+    let input22 = utils::read_input("input22.txt").unwrap();
+    c.bench_function("Day 22 Part 1", |b| {
+        b.iter(|| day22::part1(black_box(&input22)))
+    });
+    c.bench_function("Day 22 Part 2", |b| {
+        b.iter(|| day22::part2(black_box(&input22)))
+    });
+
+    let input23 = utils::read_input("input23.txt").unwrap();
+    c.bench_function("Day 23 Part 1", |b| {
+        b.iter(|| day23::part1(black_box(&input23)))
+    });
+    c.bench_function("Day 23 Part 2", |b| {
+        b.iter(|| day23::part2(black_box(&input23)))
+    });
+
+    let input24 = utils::read_input("input24.txt").unwrap();
+    c.bench_function("Day 24 Part 1", |b| {
+        b.iter(|| day24::part1(black_box(&input24)))
+    });
+    c.bench_function("Day 24 Part 2", |b| {
+        b.iter(|| day24::part2(black_box(&input24)))
+    });
+
+    let input25 = utils::read_input("input25.txt").unwrap();
+    c.bench_function("Day 25 Part 1", |b| {
+        b.iter(|| day25::part1(black_box(&input25)))
+    });
+
+    let mut longbenches = c.benchmark_group("Long Benchmarks");
+    longbenches.sample_size(10);
+
+    longbenches.bench_function("Day 15 Part 2", |b| {
+        b.iter(|| day15::part2(black_box(&input15)))
+    });
+
+    longbenches.bench_function("All Days", |b| {
         b.iter(|| {
             day1::part1(black_box(&input1));
             day1::part2(black_box(&input1));
@@ -178,14 +224,39 @@ pub fn criterion_benchmark(c: &mut Criterion) {
             day8::part2(black_box(&input8));
             day9::part1(black_box(&input9));
             day9::part2(black_box(&input9));
+            day10::part1(black_box(&input10));
+            day10::part2(black_box(&input10));
+            day11::part1(black_box(&input11));
+            day11::part2(black_box(&input11));
+            day12::part1(black_box(&input12));
+            day12::part2(black_box(&input12));
+            day13::part1(black_box(&input13));
+            day13::part2(black_box(&input13));
+            day14::part1(black_box(&input14));
+            day14::part2(black_box(&input14));
+            day15::part1(black_box(&input15));
+            day15::part2(black_box(&input15));
+            day16::part1(black_box(&input16));
+            day16::part2(black_box(&input16));
+            day17::part1(black_box(&input17));
+            day17::part2(black_box(&input17));
+            day18::part1(black_box(&input18));
+            day18::part2(black_box(&input18));
+            day19::part1(black_box(&input19));
+            day19::part2(black_box(&input19));
+            // day20::part1(black_box(&input20));
+            // day20::part2(black_box(&input20));
+            day21::part1(black_box(&input21));
+            day21::part2(black_box(&input21));
+            day22::part1(black_box(&input22));
+            day22::part2(black_box(&input22));
+            day23::part1(black_box(&input23));
+            day23::part2(black_box(&input23));
+            day24::part1(black_box(&input24));
+            day24::part2(black_box(&input24));
+            day25::part1(black_box(&input25));
+            // day25::part2(black_box(&input25));
         })
-    });
-
-    let mut longbenches = c.benchmark_group("Long Benchmarks");
-    longbenches.sample_size(10);
-
-    longbenches.bench_function("Day 15 Part 2", |b| {
-        b.iter(|| day15::part2(black_box(&input15)))
     });
 
     // let input10big = utils::read_input("10.in").unwrap();
