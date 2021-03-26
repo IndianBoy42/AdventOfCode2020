@@ -36,16 +36,9 @@ fn solve(input: &str, n: usize) -> usize {
         .enumerate()
         .for_each(|(i, num)| {
             // entry!(map, densemap, num).or_insert((i, i));
-            map.insert(num, i);
             densemap.insert(num, i);
             last = num;
         });
-
-    // let mut last: usize = input
-    //     .split(',')
-    //     .last()
-    //     .and_then(|s| s.parse().ok())
-    //     .unwrap();
 
     last = 0;
 

@@ -2,7 +2,10 @@ use aoc20::*;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
-pub fn criterion_benchmark(c: &mut Criterion) {
+pub fn criterion_benchmark(crit: &mut Criterion) {
+    let mut c = crit.benchmark_group("Main Benchmarks");
+    c.sample_size(100);
+
     let input1 = utils::read_input("input1.txt").unwrap();
     c.bench_function("Day 1 Part 1", |b| {
         b.iter(|| day1::part1(black_box(&input1)))
@@ -172,24 +175,15 @@ pub fn criterion_benchmark(c: &mut Criterion) {
     c.bench_function("Day 22 Part 1", |b| {
         b.iter(|| day22::part1(black_box(&input22)))
     });
-    c.bench_function("Day 22 Part 2", |b| {
-        b.iter(|| day22::part2(black_box(&input22)))
-    });
 
     let input23 = utils::read_input("input23.txt").unwrap();
     c.bench_function("Day 23 Part 1", |b| {
         b.iter(|| day23::part1(black_box(&input23)))
     });
-    c.bench_function("Day 23 Part 2", |b| {
-        b.iter(|| day23::part2(black_box(&input23)))
-    });
 
     let input24 = utils::read_input("input24.txt").unwrap();
     c.bench_function("Day 24 Part 1", |b| {
         b.iter(|| day24::part1(black_box(&input24)))
-    });
-    c.bench_function("Day 24 Part 2", |b| {
-        b.iter(|| day24::part2(black_box(&input24)))
     });
 
     let input25 = utils::read_input("input25.txt").unwrap();
@@ -197,11 +191,22 @@ pub fn criterion_benchmark(c: &mut Criterion) {
         b.iter(|| day25::part1(black_box(&input25)))
     });
 
-    let mut longbenches = c.benchmark_group("Long Benchmarks");
+    drop(c);
+
+    let mut longbenches = crit.benchmark_group("Long Benchmarks");
     longbenches.sample_size(10);
 
     longbenches.bench_function("Day 15 Part 2", |b| {
         b.iter(|| day15::part2(black_box(&input15)))
+    });
+    longbenches.bench_function("Day 22 Part 2", |b| {
+        b.iter(|| day22::part2(black_box(&input22)))
+    });
+    longbenches.bench_function("Day 23 Part 2", |b| {
+        b.iter(|| day23::part2(black_box(&input23)))
+    });
+    longbenches.bench_function("Day 24 Part 2", |b| {
+        b.iter(|| day24::part2(black_box(&input24)))
     });
 
     longbenches.bench_function("All Days", |b| {

@@ -1,4 +1,5 @@
 use std::mem::swap;
+use std::sync::Mutex;
 
 use regex::Regex;
 
@@ -53,7 +54,7 @@ pub fn part2(input: &str) -> usize {
         .filter(|&(_, v)| v)
         .map(|(k, _)| k)
         .collect();
-    let mut floor2 = fset(0);
+    let mut floor2 = fset(floor.len());
     let mut seen = fset(0);
 
     for _ in 0..DAYS {
@@ -63,7 +64,7 @@ pub fn part2(input: &str) -> usize {
         let add = |tile: (i32, i32, i32), (x, y, z)| (tile.0 + x, tile.1 + y, tile.2 + z);
         let getn = |tile| NEIGHBOURS.iter().map(move |&t| add(tile, t));
 
-        for &tile in &floor {
+        floor.iter().for_each(|&tile| {
             // tile is black
             let count = getn(tile).fold(0, |count, neighbour| {
                 if floor.contains(&neighbour) {
@@ -84,10 +85,11 @@ pub fn part2(input: &str) -> usize {
                     count
                 }
             });
-            if (1..=2).contains(&count) {
+            if count == 1 || count == 2 {
+                // if (1..=2).contains(&count) {
                 floor2.insert(tile);
             }
-        }
+        });
 
         swap(&mut floor, &mut floor2);
     }

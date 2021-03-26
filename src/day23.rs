@@ -16,7 +16,8 @@ fn game(input: &str, max: u32, moves: usize) -> Vec<u32> {
 
     let min = 1;
     let mut nodes = {
-        let mut nodes = (0..=max).map(|x| (x + 1)).collect_vec();
+        let mut nodes = (1..(max + 2)).collect_vec();
+        // let mut nodes = (0..=max).map(|x| (x + 1)).collect_vec();
         for &[node, next] in input.array_windows() {
             // use puzzle input for first few nodes
             nodes[(node - b'0') as usize] = (next - b'0') as u32;
@@ -26,8 +27,7 @@ fn game(input: &str, max: u32, moves: usize) -> Vec<u32> {
             *nodes.last_mut().unwrap() = (input.first().unwrap() - b'0') as _;
             nodes[(input.last().unwrap() - b'0') as usize] = 10;
         } else {
-            nodes[(input.last().unwrap() - b'0') as usize] =
-                (input.first().unwrap() - b'0') as _;
+            nodes[(input.last().unwrap() - b'0') as usize] = (input.first().unwrap() - b'0') as _;
         }
 
         nodes
@@ -36,29 +36,47 @@ fn game(input: &str, max: u32, moves: usize) -> Vec<u32> {
 
     // print_nodes(curr, &nodes);
     for i in 0..moves {
-        let a = nodes[curr as usize];
-        let b = nodes[a as usize];
-        let c = nodes[b as usize];
-        let d = nodes[c as usize];
+        // let a = nodes[curr as usize];
+        // let b = nodes[a as usize];
+        // let c = nodes[b as usize];
+        // let d = nodes[c as usize];
+        let (a, b, c, d) = unsafe {
+            let a = *nodes.get_unchecked(curr as usize);
+            let b = *nodes.get_unchecked(a as usize);
+            let c = *nodes.get_unchecked(b as usize);
+            let d = *nodes.get_unchecked(c as usize);
+            (a, b, c, d)
+        };
 
         // remove a,b,c (connect curr to d)
-        nodes[curr as usize] = d;
+        // nodes[curr as usize] = d;
+        unsafe {
+            *nodes.get_unchecked_mut(curr as usize) = d;
+        }
 
         // Find destination
-        let search = (min..curr).rev().chain((curr..=max).rev());
-        let dest = search
-            .filter(|&j| j != a)
-            .filter(|&j| j != b)
-            .filter(|&j| j != c)
-            .next()
-            .unwrap();
+        let searchin = |rng: std::ops::Range<u32>| {
+            rng.rev()
+                .filter(|&j| j != a)
+                .filter(|&j| j != b)
+                .filter(|&j| j != c)
+                .next()
+        };
+        let search = (min..curr).rev();
+        let dest = searchin(min..curr).or_else(|| searchin(curr..max)).unwrap();
 
         // dest -> (a -> b -> c) -> next(dest)
-        nodes[c as usize] = nodes[dest as usize];
-        nodes[dest as usize] = a;
+        unsafe {
+            *nodes.get_unchecked_mut(c as usize) =
+                std::mem::replace(nodes.get_unchecked_mut(dest as usize), a);
+        }
+        // nodes[c as usize] = std::mem::replace(&mut nodes[dest as usize], a)
 
         // new curr
-        curr = nodes[curr as usize];
+        // curr = nodes[curr as usize];
+        unsafe {
+            curr = *nodes.get_unchecked(curr as usize);
+        }
 
         // print_nodes(curr, &nodes);
     }
@@ -76,7 +94,7 @@ pub fn part1(input: &str) -> u32 {
         out = out * 10 + curr;
     }
 
-out
+    out
 }
 pub fn part1_deq(input: &str) -> String {
     let mut cups: VecDeque<_> = input.bytes().map(|x| x as usize).collect();
