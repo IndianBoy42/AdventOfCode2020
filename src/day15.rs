@@ -25,25 +25,27 @@ fn solve(input: &str, n: usize) -> usize {
     //     .and_then(|s| s.parse().ok())
     //     .unwrap();
 
-    for i in starting_count..n {
-        match map.entry(last) {
-            Entry::Occupied(mut occ) => {
-                let (prev, prev2) = occ.get_mut();
-                last = *prev - *prev2;
-            }
-            Entry::Vacant(vac) => {
-                unreachable!()
-            }
+    match map.entry(last) {
+        Entry::Occupied(mut occ) => {
+            let (prev, prev2) = occ.get_mut();
+            last = *prev - *prev2;
         }
+        Entry::Vacant(vac) => {
+            unreachable!()
+        }
+    }
 
+    for i in starting_count..n {
         match map.entry(last) {
             Entry::Occupied(mut occ) => {
                 let (prev, prev2) = occ.get_mut();
                 *prev2 = *prev;
                 *prev = i;
+                last = *prev - *prev2;
             }
             Entry::Vacant(vac) => {
                 vac.insert((i, i));
+                last = 0;
             }
         };
     }
