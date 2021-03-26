@@ -1,6 +1,7 @@
 use std::mem::swap;
 use std::vec;
 
+// try use nalgebra??
 use ndarray::{azip, par_azip, s, Array2, ArrayView2, ArrayViewMut2};
 
 use crate::grid::Grid2D;
@@ -50,8 +51,8 @@ const NEIGHBOURS_STEP: [(i32, i32); 8] = [
 
 fn print_grid(map: &Grid) {}
 
-fn pre_neighbours2(map: &Grid) -> FMap<(i32, i32), Vec<(i32, i32)>> {
-    fn compute(map: &Grid, x: i32, y: i32) -> Vec<(i32, i32)> {
+fn precompute_neighbours_part2(map: &Grid) -> FMap<(i32, i32), ArrayVec<[(i32, i32); 8]>> {
+    fn compute(map: &Grid, x: i32, y: i32) -> ArrayVec<[(i32, i32); 8]> {
         NEIGHBOURS_STEP
             .iter()
             .filter_map(|&(xs, ys)| {
@@ -61,7 +62,7 @@ fn pre_neighbours2(map: &Grid) -> FMap<(i32, i32), Vec<(i32, i32)>> {
                     .find(|coord| map.contains_key(coord))
                 // .unwrap_or_else(|| (x + xs, y + ys))
             })
-            .fold(Vec::with_capacity(8), |mut acc, v| {
+            .fold(ArrayVec::new(), |mut acc, v| {
                 acc.push(v);
                 acc
             })
@@ -69,29 +70,7 @@ fn pre_neighbours2(map: &Grid) -> FMap<(i32, i32), Vec<(i32, i32)>> {
     }
 
     map.iter()
-        .map(|((x, y), _)| ((x, y), compute(map, x, y)))
-        .collect()
-}
-
-fn pre_neighbours1(map: &Grid) -> FMap<(i32, i32), Vec<(i32, i32)>> {
-    fn compute(map: &Grid, x: i32, y: i32) -> Vec<(i32, i32)> {
-        NEIGHBOURS_STEP
-            .iter()
-            .filter_map(|&(xs, ys)| {
-                std::iter::successors(Some((x + xs, y + ys)), |&(x, y)| Some((x + xs, y + ys)))
-                    // .take(100)
-                    .take_while(|(x, y)| (0..100).contains(x) && (0..100).contains(y))
-                    .find(|coord| map.contains_key(coord))
-                // .unwrap_or_else(|| (x + xs, y + ys))
-            })
-            .fold(Vec::with_capacity(8), |mut acc, v| {
-                acc.push(v);
-                acc
-            })
-        // .collect()
-    }
-
-    map.iter()
+        // .par_bridge()
         .map(|((x, y), _)| ((x, y), compute(map, x, y)))
         .collect()
 }
@@ -139,7 +118,11 @@ fn step_part1_mut(map: &Grid, new: &mut Grid) {
     });
 }
 
-fn step_part2_mut(map: &Grid, new: &mut Grid, neighbours: &FMap<(i32, i32), Vec<(i32, i32)>>) {
+fn step_part2_mut(
+    map: &Grid,
+    new: &mut Grid,
+    neighbours: &FMap<(i32, i32), ArrayVec<[(i32, i32); 8]>>,
+) {
     let f = |((x, y), &tile)| {
         let occ = || {
             neighbours
@@ -230,9 +213,9 @@ pub fn part12(input: &str) -> usize {
 
         let same = ndarray::Zip::from(&grid)
             .and(&grid2)
-            .into_par_iter()
+            // .into_par_iter()
             // .fold(true, |acc, &a, &b| acc && (a == b));
-            .all(|(&a, &b)| a == b);
+            .all(|&a, &b| a == b);
         // .map(|(&a, &b)| (a == b))
         // .reduce(|| true, |a, b| a && b)
 
@@ -255,9 +238,9 @@ pub fn part1(input: &str) -> usize {
 
         let same = ndarray::Zip::from(&grid.arr)
             .and(&grid2.arr)
-            .into_par_iter()
+            // .into_par_iter()
             // .fold(true, |acc, &a, &b| acc && (a == b));
-            .all(|(&a, &b)| a == b);
+            .all(|&a, &b| a == b);
         // .map(|(&a, &b)| (a == b))
         // .reduce(|| true, |a, b| a && b)
 
@@ -273,7 +256,7 @@ pub fn part2(input: &str) -> usize {
     let mut grid = parse_grid(input);
     let mut grid2 = grid.clone();
 
-    let neighbours = pre_neighbours2(&grid);
+    let neighbours = precompute_neighbours_part2(&grid);
 
     loop {
         step_part2_mut(&grid, &mut grid2, &neighbours);
@@ -282,9 +265,9 @@ pub fn part2(input: &str) -> usize {
 
         let same = ndarray::Zip::from(&grid.arr)
             .and(&grid2.arr)
-            .into_par_iter()
+            // .into_par_iter()
             // .fold(true, |acc, &a, &b| acc && (a == b));
-            .all(|(&a, &b)| a == b);
+            .all(|&a, &b| a == b);
         // .map(|(&a, &b)| (a == b))
         // .reduce(|| true, |a, b| a && b);
 
