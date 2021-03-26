@@ -128,13 +128,16 @@ pub fn part2(input: &str) -> i64 {
         debug_assert!(assignments.iter().all(|&i| i >= 0));
         debug_assert!(possibilities.iter().all(|p| p.len() == 0));
 
-        dbg!(assignments)
+        assignments
             .into_iter()
             .map(|ass| requirements[ass as usize].clone())
             .collect_vec()
     };
 
-    let your_ticket = your_ticket.lines().nth(1).unwrap()
+    let your_ticket = your_ticket
+        .lines()
+        .nth(1)
+        .unwrap()
         .split(',')
         .map(|n| n.parse::<i32>().unwrap())
         .collect_vec();
@@ -143,7 +146,8 @@ pub fn part2(input: &str) -> i64 {
         .into_iter()
         .enumerate()
         .filter(|(_, (r, _))| r.starts_with("departure"))
-        .map(|(i, _)| your_ticket[i] as i64).product()
+        .map(|(i, _)| your_ticket[i] as i64)
+        .product()
 }
 
 #[test]
