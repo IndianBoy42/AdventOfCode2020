@@ -29,7 +29,7 @@ pub fn part1(input: &str) -> u32 {
     win.into_iter().rev().zip(1..).map(|(a, b)| a * b).sum()
 }
 
-type Hands = (ArrayVec<[u8; 16]>, ArrayVec<[u8; 16]>);
+type Hands = (ArrayVec<[u8; 8]>, ArrayVec<[u8; 8]>);
 fn play(mut p1: VecDeque<u8>, mut p2: VecDeque<u8>) -> (bool, VecDeque<u8>) {
     fn play_util(
         p1: &mut VecDeque<u8>,
