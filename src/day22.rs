@@ -29,25 +29,31 @@ pub fn part1(input: &str) -> u32 {
     win.into_iter().rev().zip(1..).map(|(a, b)| a * b).sum()
 }
 
-fn play(mut p1: VecDeque<u32>, mut p2: VecDeque<u32>) -> (bool, VecDeque<u32>) {
+type Hands = (ArrayVec<[u8; 16]>, ArrayVec<[u8; 16]>);
+fn play(mut p1: VecDeque<u8>, mut p2: VecDeque<u8>) -> (bool, VecDeque<u8>) {
     fn play_util(
-        p1: &mut VecDeque<u32>,
-        p2: &mut VecDeque<u32>,
-        previously_played: &mut FMap<(VecDeque<u32>, VecDeque<u32>), bool>,
+        p1: &mut VecDeque<u8>,
+        p2: &mut VecDeque<u8>,
+        previously_played: &mut FMap<Hands, bool>,
     ) -> bool {
         // if let Some(&b) = previously_played.get(&(p1.clone(), p2.clone())) {
         //     return b;
         // }
-        let mut set = fset(0);
+        let mut set: FSet<Hands> = fset(0);
 
         while !p1.is_empty() && !p2.is_empty() {
-            if !set.insert((p1.clone(), p2.clone())) {
+            let cloned = (p1.iter().copied().collect(), p2.iter().copied().collect());
+            // if let Some(&b) = previously_played.get(&cloned) {
+            //     // previously_played.extend(set.into_iter().map(|x| (x, b)));
+            //     return b;
+            // }
+            if !set.insert(cloned) {
+                // previously_played.extend(set.into_iter().map(|x| (x, true)));
                 return true;
             }
 
             let c1 = p1.pop_front().unwrap();
             let c2 = p2.pop_front().unwrap();
-            // let (c1, c2) = p1.pop_front().zip(p2.pop_front()).unwrap();
 
             let p1win = if p1.len() >= (c1 as usize) && p2.len() >= (c2 as usize) {
                 let mut p1 = p1.iter().copied().take(c1 as usize).collect();
@@ -65,10 +71,9 @@ fn play(mut p1: VecDeque<u32>, mut p2: VecDeque<u32>) -> (bool, VecDeque<u32>) {
                 p2.push_back(c1);
             }
         }
+
         let ret = !p1.is_empty();
-        // set.into_iter().for_each(|p| {
-        //     previously_played.insert(p, ret);
-        // });
+        // previously_played.extend(set.into_iter().map(|x| (x, ret)));
         return ret;
     }
 
@@ -81,12 +86,12 @@ fn play(mut p1: VecDeque<u32>, mut p2: VecDeque<u32>) -> (bool, VecDeque<u32>) {
     }
 }
 
-pub fn part2(input: &str) -> u32 {
+pub fn part2(input: &str) -> usize {
     let (p1, p2) = input.split_once("\n\n").unwrap();
     let f = |p: &str| -> VecDeque<_> {
         p.lines()
             .skip(1)
-            .map(u32::from_str)
+            .map(FromStr::from_str)
             .map(Result::unwrap)
             .collect()
     };
@@ -94,7 +99,11 @@ pub fn part2(input: &str) -> u32 {
     let (p1, p2) = (f(p1), f(p2));
     let (_, hand) = play(p1, p2);
 
-    hand.into_iter().rev().zip(1..).map(|(a, b)| a * b).sum()
+    hand.into_iter()
+        .rev()
+        .zip(1..)
+        .map(|(a, b)| (a as usize) * (b as usize))
+        .sum()
 }
 
 #[test]
