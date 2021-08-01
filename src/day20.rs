@@ -4,8 +4,6 @@ use std::vec;
 use crate::u32set::U32Set;
 use crate::utils::*;
 
-use smallvec::{smallvec, SmallVec};
-
 const N: usize = 10;
 
 fn reverse_border(s: U32Set) -> U32Set {
@@ -37,7 +35,85 @@ fn extract_border(s: &BitSet) -> ArrayVec<[U32Set; 4]> {
 }
 
 pub fn part1(input: &str) -> usize {
-    let tiles: FMap<usize, BitSet> = input
+    let tiles: FMap<usize, BitSet> = parse_tiles(input).collect();
+
+    // Construct mappings from tile to border and border to tile
+    let (toborder, fromborder) = parse_borders(tiles);
+    let connected_edges = connected_edges(&fromborder);
+
+    // This is not true in general but the input given by AoC satisfies this. This greatly simplifies the algorithm
+    debug_assert!(fromborder.iter().filter(|(k, v)| v.len() > 2).count() == 0);
+
+    // Corner tiles have only 2 connected edges
+    tile_map(&toborder, &connected_edges)
+        .filter(|(k, v)| v.len() == 2)
+        .map(|(k, v)| k)
+        .product()
+}
+
+fn tile_map<'a>(
+    toborder: &'a FMap<usize, ArrayVec<[U32Set; 4]>>,
+    connected_edges: &'a FSet<U32Set>,
+) -> impl Iterator<Item = (usize, ArrayVec<[U32Set; 4]>)> + 'a {
+    toborder.iter().map(move |(&k, v)| {
+        (
+            k,
+            v.iter()
+                .filter(|&&edge| {
+                    connected_edges.contains(&edge)
+                        || connected_edges.contains(&reverse_border(edge))
+                })
+                .copied()
+                .collect(),
+        )
+    })
+}
+
+fn connected_edges(fromborder: &FMap<U32Set, ArrayVec<[usize; 2]>>) -> FSet<U32Set> {
+    fromborder
+        .iter()
+        .filter(|(_, v)| v.len() >= 2)
+        .map(|(&k, _)| k)
+        .collect()
+}
+
+fn parse_borders(
+    tiles: FMap<usize, BitSet>,
+) -> (
+    FMap<usize, ArrayVec<[U32Set; 4]>>,
+    FMap<U32Set, ArrayVec<[usize; 2]>>,
+) {
+    let borders = tiles
+        .iter()
+        .map(|(&k, v)| (k, extract_border(v)))
+        .collect_vec();
+    let (toborder, fromborder) = {
+        let mut toborder = fmap(borders.len());
+        let mut fromborder = fmap(borders.len());
+        for (k, borders) in borders {
+            for &border in &borders {
+                fromborder
+                    .entry(reverse_border(border))
+                    .and_modify(|v: &mut ArrayVec<[usize; 2]>| {
+                        v.push(k);
+                    })
+                    .or_insert_with(|| [k].iter().copied().collect());
+                fromborder
+                    .entry(border)
+                    .and_modify(|v: &mut ArrayVec<[usize; 2]>| {
+                        v.push(k);
+                    })
+                    .or_insert_with(|| [k].iter().copied().collect());
+            }
+            toborder.insert(k, borders);
+        }
+        (toborder, fromborder)
+    };
+    (toborder, fromborder)
+}
+
+fn parse_tiles(input: &str) -> impl Iterator<Item = (usize, BitSet)> + '_ {
+    input
         // Split by blank lines
         .split("\n\n")
         // Split each tile to lines
@@ -59,72 +135,28 @@ pub fn part1(input: &str) -> usize {
                     .collect(),
             )
         })
-        .collect();
+}
+
+pub fn part2(input: &str) -> usize {
+    let tiles: FMap<usize, BitSet> = parse_tiles(input).collect();
 
     // Construct mappings from tile to border and border to tile
-    let borders = tiles
-        .iter()
-        .map(|(&k, v)| (k, extract_border(v)))
-        .collect_vec();
-    let (toborder, fromborder) = {
-        let mut toborder = fmap(borders.len());
-        let mut fromborder = fmap(borders.len());
-        for (k, borders) in borders {
-            for &border in &borders {
-                fromborder
-                    .entry(reverse_border(border))
-                    .and_modify(|v: &mut SmallVec<[usize; 2]>| {
-                        v.push(k);
-                    })
-                    .or_insert_with(|| smallvec![k]);
-                fromborder
-                    .entry(border)
-                    .and_modify(|v: &mut SmallVec<[usize; 2]>| {
-                        v.push(k);
-                    })
-                    .or_insert_with(|| smallvec![k]);
-            }
-            toborder.insert(k, borders);
-        }
-        (toborder, fromborder)
-    };
-
-    let connected_edges: FSet<_> = fromborder
-        .iter()
-        .filter(|(k, v)| v.len() >= 2)
-        .map(|e| dbg!(e))
-        .map(|(k, v)| k)
-        .collect();
-    dbg!(&toborder, &fromborder);
+    let (toborder, fromborder) = parse_borders(tiles);
+    let connected_edges = connected_edges(&fromborder);
 
     // This is not true in general but the input given by AoC satisfies this. This greatly simplifies the algorithm
     debug_assert!(fromborder.iter().filter(|(k, v)| v.len() > 2).count() == 0);
 
-    let tilemap: FMap<_, _> = toborder
-        .iter()
-        .map(|(k, v)| {
-            (
-                k,
-                v.iter()
-                    .filter(|&&edge| {
-                        connected_edges.contains(&edge)
-                            || connected_edges.contains(&reverse_border(edge))
-                    })
-                    .collect_vec(),
-            )
-        })
-        .collect();
-    dbg!(&tilemap);
+    let map: FMap<_, _> = tile_map(&toborder, &connected_edges).collect();
+    let corner = map
+        .values()
+        .find_position(|&x| x.len() == 2)
+        .expect("Must be a corner piece");
 
-    // Corner tiles have only 2 connected edges
-    tilemap
-        .iter()
-        .filter(|(k, v)| v.len() == 2)
-        .map(|(&k, v)| k)
-        .product()
-}
+    const MONSTER: &str = "                  # 
+#    ##    ##    ###
+ #  #  #  #  #  #   ";
 
-pub fn part2(input: &str) -> usize {
     unimplemented!()
 }
 
