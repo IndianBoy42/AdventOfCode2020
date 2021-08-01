@@ -1,8 +1,14 @@
 use core::iter::FromIterator;
+use std::fmt::Debug;
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive( Clone, Copy, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct USet {
     val: u32,
+}
+impl Debug for USet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:b}", self.val)
+    }
 }
 pub type U32Set = USet;
 impl USet {
@@ -31,6 +37,7 @@ impl USet {
     pub const fn is_empty(self) -> bool {
         self.len() == 0
     }
+    /// Reverse the first `i` bits
     pub const fn revn(self, i: usize) -> USet {
         Self::new(self.val.reverse_bits() >> (32 - i))
     }

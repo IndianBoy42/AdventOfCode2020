@@ -92,7 +92,7 @@ pub fn part2fft(input: &str) -> usize {
 #[test]
 fn test() {
     let input = read_input("input1.txt").unwrap();
-    assert_eq!(part1(&input), 646779);
-    assert_eq!(part2(&input), 246191688);
+    assert_eq!(part1(&input), 646_779);
+    assert_eq!(part2(&input), 246_191_688);
     // assert_eq!(part2fft(&input), 246191688);
 }

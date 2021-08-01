@@ -13,7 +13,6 @@
 #![feature(map_entry_replace)]
 #![feature(specialization)]
 #![feature(impl_trait_in_bindings)]
-#![feature(try_trait)]
 #![feature(bindings_after_at)]
 #![feature(maybe_uninit_extra)]
 #![feature(maybe_uninit_uninit_array)]
